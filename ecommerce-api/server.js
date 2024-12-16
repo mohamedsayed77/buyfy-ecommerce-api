@@ -2,6 +2,8 @@ import express from "express";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
+import ApiError from "./utils/ApiError.js";
+import globalError from "./middleware/errorMiddleware.js";
 import categoryRoute from "./routes/categoryRoute.js";
 
 dotenv.config();
@@ -22,7 +24,25 @@ if (process.env.NODE_ENV === "development") {
 // mount the router
 app.use("/api/v1/categories", categoryRoute);
 
+// Error handling middleware for non-existing routes
+app.all("*", (req, res, next) => {
+  next(new ApiError(`Cant't find this route: ${req.originalUrl}`, 400));
+});
+
+// Error handling middleware for async/await
+app.use(globalError);
+
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+
+// Handling unhandled promise rejections
+process.on("unhandledRejection", (err) => {
+  console.error(`unhandledRejection Errors: ${err.name} | ${err.message}`);
+
+  server.close(() => {
+    console.error("Server is shutting down");
+    process.exit(1);
+  });
 });

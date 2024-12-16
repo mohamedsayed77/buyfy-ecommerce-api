@@ -1,6 +1,7 @@
 import slugify from "slugify";
 import expressAsyncHandler from "express-async-handler";
 import categoryModel from "../models/categoryModel.js";
+import ApiError from "../utils/ApiError.js";
 
 // @discussion   Get list of categories
 // @route        Get /api/v1/categories
@@ -18,13 +19,13 @@ const getCategories = expressAsyncHandler(async (req, res) => {
 // @discussion   Get specific category by id
 // @route        Get /api/v1/categories/:id
 // @access       public
-const getCategory = expressAsyncHandler(async (req, res) => {
+const getCategory = expressAsyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
   const category = await categoryModel.findById(id);
 
   if (!category) {
-    return res.status(404).json({ message: "Category not found" });
+    return next(new ApiError(`No category for this id ${id}`, 404));
   }
 
   res.status(200).json({ data: category });
@@ -55,7 +56,7 @@ const updateCategory = expressAsyncHandler(async (req, res, next) => {
   );
 
   if (!category) {
-    return res.status(404).json({ message: "Category not found" });
+    return next(new ApiError(`No category for this id ${id}`, 404));
   }
 
   res.status(200).json({ data: category });
@@ -64,13 +65,13 @@ const updateCategory = expressAsyncHandler(async (req, res, next) => {
 // @description    delete specific category
 // @route          Delete  /api/v1/categories/:id
 // @access        private
-const deleteCategory = expressAsyncHandler(async (req, res) => {
+const deleteCategory = expressAsyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
   const category = await categoryModel.findByIdAndDelete(id);
 
   if (!category) {
-    return res.status(404).json({ message: "Category not found" });
+    return next(new ApiError(`No category for this id ${id}`, 404));
   }
 
   res.status(204).send();
