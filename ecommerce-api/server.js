@@ -2,6 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
+import categoryRoute from "./routes/categoryRoute.js";
 
 dotenv.config();
 
@@ -18,6 +19,8 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
   console.log(`mode: ${process.env.NODE_ENV}`);
 }
+// mount the router
+app.use("/api/v1/categories", categoryRoute);
 
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
