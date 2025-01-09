@@ -1,10 +1,13 @@
 import express from "express";
 import morgan from "morgan";
 import dotenv from "dotenv";
+
 import connectDB from "./config/db.js";
 import ApiError from "./utils/ApiError.js";
 import globalError from "./middleware/errorMiddleware.js";
+
 import categoryRoute from "./routes/categoryRoute.js";
+import subCategoryRoute from "./routes/subCategoryRoute.js";
 
 dotenv.config();
 
@@ -23,6 +26,7 @@ if (process.env.NODE_ENV === "development") {
 }
 // mount the router
 app.use("/api/v1/categories", categoryRoute);
+app.use("/api/v1/subcategories", subCategoryRoute);
 
 // Error handling middleware for non-existing routes
 app.all("*", (req, res, next) => {
