@@ -50,9 +50,45 @@ const getSubCategory = expressAsyncHandler(async (req, res, next) => {
 
   res.status(200).json({ data: subCategory });
 });
+// @description    update specific subcategory
+// @route          Post  /api/v1/subcategories/:id
+// @access        private
+const updateSubCategory = expressAsyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const { name, category } = req.body;
+
+  const subcategory = await SubCategoryModel.findOneAndUpdate(
+    { _id: id },
+    { name, slug: slugify(name), category },
+    { new: true }
+  );
+
+  if (!subcategory) {
+    return next(new ApiError(`No subCategory for this id ${id}`, 404));
+  }
+
+  res.status(200).json({ data: subcategory });
+});
+
+// @description    delete specific subcategory
+// @route          Delete  /api/v1/subcategories/:id
+// @access        private
+const deleteSubCategory = expressAsyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  const subCategory = await SubCategoryModel.findByIdAndDelete(id);
+
+  if (!subCategory) {
+    return next(new ApiError(`No subCategory for this id ${id}`, 404));
+  }
+
+  res.status(204).send();
+});
 
 export default {
   createSubCategory,
   getSubCategories,
   getSubCategory,
+  updateSubCategory,
+  deleteSubCategory,
 };
