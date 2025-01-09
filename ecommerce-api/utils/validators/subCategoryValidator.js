@@ -31,7 +31,12 @@ const createSubCategoryValidator = [
 
   validatorMiddleware,
 ];
+const getSubCategoryValidator = [
+  check("id").isMongoId().withMessage("Invaild subCategory id format"),
+  validatorMiddleware,
+];
 
 export default {
   createSubCategoryValidator,
+  getSubCategoryValidator,
 };
