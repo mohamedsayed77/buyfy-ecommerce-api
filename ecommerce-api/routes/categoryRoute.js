@@ -2,6 +2,8 @@ import express from "express";
 import categoryService from "../services/categoryService.js";
 import categoryValidator from "../utils/validators/categoryValidator.js";
 
+import subCategoriesRoute from "./subCategoryRoute.js";
+
 const {
   getCategoryValidator,
   createCategoryValidator,
@@ -16,8 +18,9 @@ const {
   updateCategory,
   deleteCategory,
 } = categoryService;
-
 const router = express.Router();
+
+router.use("/:categoryId/subcategories", subCategoriesRoute);
 
 router
   .route("/")

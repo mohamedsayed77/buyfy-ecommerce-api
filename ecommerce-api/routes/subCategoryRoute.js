@@ -2,6 +2,9 @@ import express from "express";
 import SubCategoryService from "../services/subCategoryService.js";
 import SubCategoryValidators from "../utils/validators/subCategoryValidator.js";
 
+import subCategoryMiddleware from "../middleware/subCategoryMiddleware.js";
+
+const { setCategoryId, filterByCategory } = subCategoryMiddleware;
 const {
   createSubCategoryValidator,
   getSubCategoryValidator,
@@ -17,12 +20,12 @@ const {
   deleteSubCategory,
 } = SubCategoryService;
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router
   .route("/")
-  .get(getSubCategories)
-  .post(createSubCategoryValidator, createSubCategory);
+  .get(filterByCategory, getSubCategories)
+  .post(setCategoryId, createSubCategoryValidator, createSubCategory);
 
 router
   .route("/:id")
