@@ -23,6 +23,7 @@ const subCategorySchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+//  mongoose middleware that populates category
 subCategorySchema.pre(/^find/, function (next) {
   this.populate({
     path: "category",
