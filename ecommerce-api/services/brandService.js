@@ -1,5 +1,5 @@
-import slugify from "slugify";
 import expressAsyncHandler from "express-async-handler";
+
 import brandModel from "../models/brandModel.js";
 import ApiError from "../utils/ApiError.js";
 
@@ -7,10 +7,7 @@ import ApiError from "../utils/ApiError.js";
 // @route          Post  /api/v1/brands
 //  @access        Private
 const createBrand = expressAsyncHandler(async (req, res) => {
-  const { name } = req.body;
-  const slug = slugify(name, { lower: true });
-
-  const brand = await brandModel.create({ name, slug });
+  const brand = await brandModel.create(req.body);
   res.status(201).json({ data: brand });
 });
 
@@ -47,13 +44,10 @@ const getBrand = expressAsyncHandler(async (req, res, next) => {
 // @access        private
 const updateBrand = expressAsyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const { name } = req.body;
 
-  const brand = await brandModel.findOneAndUpdate(
-    { _id: id },
-    { name, slug: slugify(name) },
-    { new: true }
-  );
+  const brand = await brandModel.findOneAndUpdate({ _id: id }, req.body, {
+    new: true,
+  });
 
   if (!brand) {
     return next(new ApiError(`No brand for this id ${id}`, 404));

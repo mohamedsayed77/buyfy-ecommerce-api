@@ -12,14 +12,13 @@ const productSchema = new mongoose.Schema(
     },
     slug: {
       type: String,
-      required: true,
       lowercase: true,
     },
     description: {
       type: String,
       required: [true, "Product description is required"],
       minlength: [
-        10,
+        20,
         "Product description must be at least 10 characters long",
       ],
       maxlength: [
@@ -43,7 +42,7 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Product price is required"],
       trim: true,
-      max: [9999999, "too long product price"],
+      max: [999999, "too long product price"],
     },
     priceAfterDiscount: {
       type: Number,
@@ -89,6 +88,7 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
 productSchema.pre(/^find/, function (next) {
   this.populate({
     path: "category",

@@ -7,7 +7,7 @@ const categorySchema = new mongoose.Schema(
       type: String,
       required: [true, "Category required"],
       unique: [true, "Category must be unique"],
-      minlength: [3, "To short category name"],
+      minlength: [2, "To short category name"],
       maxlength: [32, "To long category name"],
     },
     // A and B => shoping.com/a-and-b

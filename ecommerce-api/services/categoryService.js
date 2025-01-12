@@ -1,7 +1,15 @@
-import slugify from "slugify";
 import expressAsyncHandler from "express-async-handler";
+
 import categoryModel from "../models/categoryModel.js";
 import ApiError from "../utils/ApiError.js";
+
+// @description    create a category
+// @route          Post  /api/v1/categories
+//  @access        Private
+const createCategory = expressAsyncHandler(async (req, res) => {
+  const category = await categoryModel.create(req.body);
+  res.status(201).json({ data: category });
+});
 
 // @discussion   Get list of categories
 // @route        Get /api/v1/categories
@@ -31,29 +39,15 @@ const getCategory = expressAsyncHandler(async (req, res, next) => {
   res.status(200).json({ data: category });
 });
 
-// @description    create a category
-// @route          Post  /api/v1/categories
-//  @access        Private
-const createCategory = expressAsyncHandler(async (req, res) => {
-  const { name } = req.body;
-  const slug = slugify(name, { lower: true });
-
-  const category = await categoryModel.create({ name, slug });
-  res.status(201).json({ data: category });
-});
-
 // @description    update specific category
 // @route          Post  /api/v1/categories/:id
 // @access        private
 const updateCategory = expressAsyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const { name } = req.body;
 
-  const category = await categoryModel.findOneAndUpdate(
-    { _id: id },
-    { name, slug: slugify(name) },
-    { new: true }
-  );
+  const category = await categoryModel.findOneAndUpdate({ _id: id }, req.body, {
+    new: true,
+  });
 
   if (!category) {
     return next(new ApiError(`No category for this id ${id}`, 404));
