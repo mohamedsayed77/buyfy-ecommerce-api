@@ -18,9 +18,9 @@ const createBrand = expressAsyncHandler(async (req, res) => {
 const getBrands = expressAsyncHandler(async (req, res) => {
   // build the query
   const documentsCount = await brandModel.countDocuments();
-  const apiFeatures = new ApiFeatures(brandModel.find(), req.query).paginate(
-    documentsCount
-  );
+  const apiFeatures = new ApiFeatures(brandModel.find(), req.query)
+    .paginate(documentsCount)
+    .filter();
 
   const { query, paginationResult } = apiFeatures;
 

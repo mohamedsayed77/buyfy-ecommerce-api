@@ -1,5 +1,6 @@
+/* eslint-disable node/no-unsupported-features/es-syntax */
 class ApiFeatures {
-  constructor(query, queryString) {
+  constructor(query, queryString, req) {
     this.query = query;
     this.queryString = queryString;
   }
@@ -26,6 +27,25 @@ class ApiFeatures {
     this.query = this.query.skip(skip).limit(limit);
     this.paginationResult = pagination;
 
+    return this;
+  }
+
+  filter(req) {
+    const queryStringObj = { ...this.queryString };
+    const excludesFields = ["page", "sort", "limit", "fields", "keyword"];
+    excludesFields.forEach((field) => delete queryStringObj[field]);
+
+    // Apply filtration by using [gte,gt,lte,lt)]
+    let queryStr = JSON.stringify(queryStringObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    let filterObject = JSON.parse(queryStr);
+
+    // Only merge req.filterObject if it exists
+    if (req && req.filterObject) {
+      filterObject = { ...filterObject, ...req.filterObject };
+    }
+
+    this.query = this.query.find(filterObject);
     return this;
   }
 }

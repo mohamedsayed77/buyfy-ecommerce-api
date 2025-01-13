@@ -18,9 +18,9 @@ const createCategory = expressAsyncHandler(async (req, res) => {
 const getCategories = expressAsyncHandler(async (req, res) => {
   // build the query
   const documentsCount = await categoryModel.countDocuments();
-  const apiFeatures = new ApiFeatures(categoryModel.find(), req.query).paginate(
-    documentsCount
-  );
+  const apiFeatures = new ApiFeatures(categoryModel.find(), req.query)
+    .paginate(documentsCount)
+    .filter();
 
   const { query, paginationResult } = apiFeatures;
 

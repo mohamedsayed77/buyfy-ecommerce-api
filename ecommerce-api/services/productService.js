@@ -17,9 +17,9 @@ const createProduct = expressAsyncHandler(async (req, res) => {
 const getProducts = expressAsyncHandler(async (req, res) => {
   // build the query
   const documentsCount = await ProductModel.countDocuments();
-  const apiFeatures = new ApiFeatures(ProductModel.find(), req.query).paginate(
-    documentsCount
-  );
+  const apiFeatures = new ApiFeatures(ProductModel.find(), req.query)
+    .paginate(documentsCount)
+    .filter();
 
   const { query, paginationResult } = apiFeatures;
 

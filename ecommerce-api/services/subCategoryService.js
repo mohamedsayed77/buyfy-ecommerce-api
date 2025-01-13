@@ -18,10 +18,9 @@ const createSubCategory = expressAsyncHandler(async (req, res) => {
 const getSubCategories = expressAsyncHandler(async (req, res) => {
   // build the query
   const documentsCount = await SubCategoryModel.countDocuments();
-  const apiFeatures = new ApiFeatures(
-    SubCategoryModel.find(req.filterObject),
-    req.query
-  ).paginate(documentsCount);
+  const apiFeatures = new ApiFeatures(SubCategoryModel.find(), req.query)
+    .paginate(documentsCount)
+    .filter(req);
 
   const { query, paginationResult } = apiFeatures;
 
