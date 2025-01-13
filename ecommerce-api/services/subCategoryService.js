@@ -2,6 +2,7 @@ import expressAsyncHandler from "express-async-handler";
 
 import SubCategoryModel from "../models/subCategoryModel.js";
 import ApiError from "../utils/ApiError.js";
+import ApiFeatures from "../utils/apiFeatures.js";
 
 // @description    create a subcategory
 // @route          Post  /api/v1/subcategories
@@ -15,17 +16,23 @@ const createSubCategory = expressAsyncHandler(async (req, res) => {
 // @route        Get /api/v1/subcategories
 // @access       public
 const getSubCategories = expressAsyncHandler(async (req, res) => {
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 5;
-  const skip = (page - 1) * limit; // (2-1) *5 = 5
+  // build the query
+  const documentsCount = await SubCategoryModel.countDocuments();
+  const apiFeatures = new ApiFeatures(
+    SubCategoryModel.find(req.filterObject),
+    req.query
+  ).paginate(documentsCount);
 
-  const subCategories = await SubCategoryModel.find(req.filterObject)
-    .skip(skip)
-    .limit(limit);
+  const { query, paginationResult } = apiFeatures;
 
-  res
-    .status(200)
-    .json({ results: subCategories.length, page, data: subCategories });
+  // execute the query
+  const subCategories = await query;
+
+  res.status(200).json({
+    results: subCategories.length,
+    paginationResult,
+    data: subCategories,
+  });
 });
 
 // @discussion   Get specific subcategory by id

@@ -1,6 +1,7 @@
 import expressAsyncHandler from "express-async-handler";
 import ProductModel from "../models/productModel.js";
 import ApiError from "../utils/ApiError.js";
+import ApiFeatures from "../utils/apiFeatures.js";
 
 // @description    create a product
 // @route          Post  /api/v1/products
@@ -14,13 +15,20 @@ const createProduct = expressAsyncHandler(async (req, res) => {
 // @route        Get /api/v1/products
 // @access       public
 const getProducts = expressAsyncHandler(async (req, res) => {
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 5;
-  const skip = (page - 1) * limit;
+  // build the query
+  const documentsCount = await ProductModel.countDocuments();
+  const apiFeatures = new ApiFeatures(ProductModel.find(), req.query).paginate(
+    documentsCount
+  );
 
-  const products = await ProductModel.find().skip(skip).limit(limit);
+  const { query, paginationResult } = apiFeatures;
 
-  res.status(200).json({ results: products.length, page, data: products });
+  // execute the query
+  const products = await query;
+
+  res
+    .status(200)
+    .json({ results: products.length, paginationResult, data: products });
 });
 
 // @discussion   Get specific product by id

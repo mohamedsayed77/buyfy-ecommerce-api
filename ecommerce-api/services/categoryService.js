@@ -2,6 +2,7 @@ import expressAsyncHandler from "express-async-handler";
 
 import categoryModel from "../models/categoryModel.js";
 import ApiError from "../utils/ApiError.js";
+import ApiFeatures from "../utils/apiFeatures.js";
 
 // @description    create a category
 // @route          Post  /api/v1/categories
@@ -15,13 +16,20 @@ const createCategory = expressAsyncHandler(async (req, res) => {
 // @route        Get /api/v1/categories
 // @access       public
 const getCategories = expressAsyncHandler(async (req, res) => {
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 5;
-  const skip = (page - 1) * limit; // (2-1) *5 = 5
+  // build the query
+  const documentsCount = await categoryModel.countDocuments();
+  const apiFeatures = new ApiFeatures(categoryModel.find(), req.query).paginate(
+    documentsCount
+  );
 
-  const categories = await categoryModel.find({}).skip(skip).limit(limit);
+  const { query, paginationResult } = apiFeatures;
 
-  res.status(200).json({ results: categories.length, page, data: categories });
+  // execute the query
+  const categories = await query;
+
+  res
+    .status(200)
+    .json({ results: categories.length, paginationResult, data: categories });
 });
 
 // @discussion   Get specific category by id

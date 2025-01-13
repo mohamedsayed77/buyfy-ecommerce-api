@@ -2,6 +2,7 @@ import expressAsyncHandler from "express-async-handler";
 
 import brandModel from "../models/brandModel.js";
 import ApiError from "../utils/ApiError.js";
+import ApiFeatures from "../utils/apiFeatures.js";
 
 // @description    create a brand
 // @route          Post  /api/v1/brands
@@ -15,13 +16,20 @@ const createBrand = expressAsyncHandler(async (req, res) => {
 // @route        Get /api/v1/brands
 // @access       public
 const getBrands = expressAsyncHandler(async (req, res) => {
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 5;
-  const skip = (page - 1) * limit; // (2-1) *5 = 5
+  // build the query
+  const documentsCount = await brandModel.countDocuments();
+  const apiFeatures = new ApiFeatures(brandModel.find(), req.query).paginate(
+    documentsCount
+  );
 
-  const brands = await brandModel.find().skip(skip).limit(limit);
+  const { query, paginationResult } = apiFeatures;
 
-  res.status(200).json({ results: brands.length, page, data: brands });
+  // execute the query
+  const brands = await query;
+
+  res
+    .status(200)
+    .json({ results: brands.length, paginationResult, data: brands });
 });
 
 // @discussion   Get specific brand by id
