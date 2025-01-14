@@ -21,7 +21,9 @@ const getBrands = expressAsyncHandler(async (req, res) => {
   const apiFeatures = new ApiFeatures(brandModel.find(), req.query)
     .paginate(documentsCount)
     .filter()
-    .search();
+    .search()
+    .sort()
+    .limitFields();
 
   const { query, paginationResult } = apiFeatures;
 

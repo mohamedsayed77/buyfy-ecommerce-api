@@ -20,7 +20,9 @@ const getProducts = expressAsyncHandler(async (req, res) => {
   const apiFeatures = new ApiFeatures(ProductModel.find(), req.query)
     .paginate(documentsCount)
     .filter()
-    .search("products");
+    .search("products")
+    .sort()
+    .limitFields();
 
   const { query, paginationResult } = apiFeatures;
 
