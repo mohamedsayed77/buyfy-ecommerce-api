@@ -19,7 +19,8 @@ const getProducts = expressAsyncHandler(async (req, res) => {
   const documentsCount = await ProductModel.countDocuments();
   const apiFeatures = new ApiFeatures(ProductModel.find(), req.query)
     .paginate(documentsCount)
-    .filter();
+    .filter()
+    .search("products");
 
   const { query, paginationResult } = apiFeatures;
 

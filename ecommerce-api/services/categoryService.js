@@ -20,7 +20,8 @@ const getCategories = expressAsyncHandler(async (req, res) => {
   const documentsCount = await categoryModel.countDocuments();
   const apiFeatures = new ApiFeatures(categoryModel.find(), req.query)
     .paginate(documentsCount)
-    .filter();
+    .filter()
+    .search();
 
   const { query, paginationResult } = apiFeatures;
 

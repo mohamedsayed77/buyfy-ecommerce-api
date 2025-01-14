@@ -1,6 +1,6 @@
 /* eslint-disable node/no-unsupported-features/es-syntax */
 class ApiFeatures {
-  constructor(query, queryString, req) {
+  constructor(query, queryString) {
     this.query = query;
     this.queryString = queryString;
   }
@@ -48,5 +48,25 @@ class ApiFeatures {
     this.query = this.query.find(filterObject);
     return this;
   }
+
+  search(modelName) {
+    if (this.queryString.keyword) {
+      let searchQuery = {};
+      if (modelName === "products") {
+        searchQuery.$or = [
+          { title: { $regex: this.queryString.keyword, $options: "i" } },
+          { description: { $regex: this.queryString.keyword, $options: "i" } },
+        ];
+      } else {
+        searchQuery = {
+          name: { $regex: this.queryString.keyword, $options: "i" },
+        };
+      }
+
+      this.query = this.query.find(searchQuery);
+    }
+    return this;
+  }
 }
+
 export default ApiFeatures;
