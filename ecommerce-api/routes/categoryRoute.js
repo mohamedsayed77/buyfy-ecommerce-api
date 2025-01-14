@@ -1,8 +1,13 @@
 import express from "express";
+
 import categoryService from "../services/categoryService.js";
 import categoryValidator from "../utils/validators/categoryValidator.js";
-
 import subCategoriesRoute from "./subCategoryRoute.js";
+import uploadMiddleware from "../middleware/uploadMiddleware.js";
+import resizeImage from "../middleware/imageProcessingMiddleware.js";
+
+const { uploadSingleImage } = uploadMiddleware;
+const { resizeCategoryImage } = resizeImage;
 
 const {
   getCategoryValidator,
@@ -25,13 +30,23 @@ router.use("/:categoryId/subcategories", subCategoriesRoute);
 router
   .route("/")
   .get(getCategories)
-  .post(createCategoryValidator, createCategory);
+  .post(
+    uploadSingleImage("image"),
+    resizeCategoryImage(),
+    createCategoryValidator,
+    createCategory
+  );
 
 router
   .route("/:id")
   .get(getCategoryValidator, getCategory)
 
-  .put(updateCategoryValidator, updateCategory)
+  .put(
+    uploadSingleImage("image"),
+    resizeCategoryImage(),
+    updateCategoryValidator,
+    updateCategory
+  )
   .delete(deleteCategoryValidator, deleteCategory);
 
 export default router;
