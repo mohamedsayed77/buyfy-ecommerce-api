@@ -3,18 +3,18 @@ import slugify from "slugify";
 import validatorMiddleware from "../../middleware/validatorMiddleware.js";
 
 const getCategoryValidator = [
-  check("id").isMongoId().withMessage("Invaild category id format"),
+  check("id").isMongoId().withMessage("Invalid category ID format."),
   validatorMiddleware,
 ];
 
 const createCategoryValidator = [
   check("name")
     .notEmpty()
-    .withMessage("Category required")
+    .withMessage("Category name is required.")
     .isLength({ min: 2 })
-    .withMessage("too short category name")
+    .withMessage("Category name must be at least 2 characters long.")
     .isLength({ max: 32 })
-    .withMessage("too long category name")
+    .withMessage("Category name must be at most 32 characters long.")
     .custom((val, { req }) => {
       req.body.slug = slugify(val);
       return true;
@@ -24,13 +24,13 @@ const createCategoryValidator = [
 ];
 
 const updateCategoryValidator = [
-  check("id").isMongoId().withMessage("Invaild category id format"),
+  check("id").isMongoId().withMessage("Invalid category ID format."),
   check("name")
     .optional()
     .isLength({ min: 2 })
-    .withMessage("too short category name")
+    .withMessage("Category name must be at least 2 characters long.")
     .isLength({ max: 32 })
-    .withMessage("too long category name")
+    .withMessage("Category name must be at most 32 characters long.")
     .custom((val, { req }) => {
       req.body.slug = slugify(val);
       return true;
@@ -39,7 +39,7 @@ const updateCategoryValidator = [
 ];
 
 const deleteCategoryValidator = [
-  check("id").isMongoId().withMessage("Invaild category id format"),
+  check("id").isMongoId().withMessage("Invalid category ID format."),
   validatorMiddleware,
 ];
 

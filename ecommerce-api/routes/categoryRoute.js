@@ -8,14 +8,12 @@ import resizeImage from "../middleware/imageProcessingMiddleware.js";
 
 const { uploadSingleImage } = uploadMiddleware;
 const { resizeCategoryImage } = resizeImage;
-
 const {
   getCategoryValidator,
   createCategoryValidator,
   updateCategoryValidator,
   deleteCategoryValidator,
 } = categoryValidator;
-
 const {
   getCategories,
   createCategory,
@@ -23,13 +21,18 @@ const {
   updateCategory,
   deleteCategory,
 } = categoryService;
+
+// Create a new router instance
 const router = express.Router();
 
+// Use subcategory routes for specific category ID
 router.use("/:categoryId/subcategories", subCategoriesRoute);
 
+// Define routes for categories
 router
   .route("/")
   .get(getCategories)
+  // Upload image, resize it, validate request, and create a category
   .post(
     uploadSingleImage("image"),
     resizeCategoryImage(),
@@ -37,10 +40,12 @@ router
     createCategory
   );
 
+// Define routes for a specific category by ID
 router
   .route("/:id")
   .get(getCategoryValidator, getCategory)
 
+  // Upload image, resize it, validate request, and update a category by ID
   .put(
     uploadSingleImage("image"),
     resizeCategoryImage(),

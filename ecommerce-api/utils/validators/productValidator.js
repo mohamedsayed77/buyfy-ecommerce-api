@@ -5,225 +5,230 @@ import category from "../../models/categoryModel.js";
 import SubCategory from "../../models/subCategoryModel.js";
 
 const getProductValidator = [
-  check("id").isMongoId().withMessage("Invaild Product id format"),
+  check("id").isMongoId().withMessage("Invalid product ID format."),
   validatorMiddleware,
 ];
 
 const createProductValidator = [
   check("title")
     .isLength({ min: 3 })
-    .withMessage("Too short product title")
+    .withMessage("Product title must be at least 3 characters long.")
     .notEmpty()
-    .withMessage("Product required")
+    .withMessage("Product title is required.")
     .custom((val, { req }) => {
       req.body.slug = slugify(val);
       return true;
     }),
   check("description")
     .notEmpty()
-    .withMessage("Product description is required")
+    .withMessage("Product description is required.")
     .isLength({ max: 2000 })
-    .withMessage("Product description should not exceed 2000 characters"),
+    .withMessage("Product description should not exceed 2000 characters."),
   check("quantity")
     .notEmpty()
-    .withMessage("Product quantity is required")
+    .withMessage("Product quantity is required.")
     .isNumeric()
-    .withMessage("Product quantity must be a number"),
-  check("sold").optional().isNumeric(),
+    .withMessage("Product quantity must be a number."),
+  check("sold")
+    .optional()
+    .isNumeric()
+    .withMessage("Sold quantity must be a number."),
   check("price")
     .notEmpty()
-    .withMessage("Product price is required")
+    .withMessage("Product price is required.")
     .isNumeric()
-    .withMessage("Product price must be a number")
+    .withMessage("Product price must be a number.")
     .isLength({ max: 32 })
-    .withMessage("Product price should not exceed 32 characters"),
+    .withMessage("Product price should not exceed 32 characters."),
   check("priceAfterDiscount")
     .optional()
     .isNumeric()
-    .withMessage("Product discounted price must be a number")
-    .isFloat()
+    .withMessage("Discounted price must be a number.")
     .custom((value, { req }) => {
       if (req.body.price < value) {
-        throw new Error("Discounted price must be less than to original price");
+        throw new Error(
+          "Discounted price must be less than the original price."
+        );
       }
       return true;
     }),
   check("colors")
     .optional()
     .isArray()
-    .withMessage("available colors should be provided as array of string"),
-  check("imageCover").notEmpty().withMessage("product image cover is required"),
-
+    .withMessage("Available colors should be provided as an array of strings."),
+  check("imageCover")
+    .notEmpty()
+    .withMessage("Product image cover is required."),
   check("images")
     .optional()
     .isArray()
-    .withMessage("product images should be provided as array of string"),
+    .withMessage("Product images should be provided as an array of strings."),
   check("category")
     .notEmpty()
-    .withMessage("product category is required")
+    .withMessage("Product category is required.")
     .isMongoId()
-    .withMessage("Invaild category id format")
+    .withMessage("Invalid category ID format.")
     .custom((categoryId) =>
       category.findById(categoryId).then((fetchedCategory) => {
         if (!fetchedCategory) {
           return Promise.reject(
-            new Error(`No category found for this id ${categoryId}`)
+            new Error(`No category found for this ID: ${categoryId}`)
           );
         }
       })
     ),
-
   check("subCategories")
     .optional()
     .isMongoId()
-    .withMessage("Invaild subcategory id format")
+    .withMessage("Invalid subcategory ID format.")
     .custom((subCategoriesIds) =>
       SubCategory.find({
         _id: { $exists: true, $in: subCategoriesIds },
       }).then((result) => {
         if (result.length < 1 || result.length !== subCategoriesIds.length) {
-          return Promise.reject(new Error(`Invalid subcategories ids`));
+          return Promise.reject(new Error("Invalid subcategory IDs."));
         }
       })
     )
     .custom((value, { req }) =>
       SubCategory.find({ category: req.body.category }).then(
         (subCategories) => {
-          const subCategoriesIdsInDb = [];
-          subCategories.forEach((subCategory) => {
-            subCategoriesIdsInDb.push(subCategory._id.toString());
-          });
+          const subCategoriesIdsInDb = subCategories.map((subCategory) =>
+            subCategory._id.toString()
+          );
           const checker = (target, arr) => target.every((v) => arr.includes(v));
           if (!checker(value, subCategoriesIdsInDb)) {
             return Promise.reject(
-              new Error("subCategories not belong to categoryId ")
+              new Error(
+                "Some subcategories do not belong to the specified category."
+              )
             );
           }
         }
       )
     ),
-  check("brand").optional().isMongoId().withMessage("Invaild brand id format"),
+  check("brand").optional().isMongoId().withMessage("Invalid brand ID format."),
   check("ratingsAverage")
     .optional()
     .isNumeric()
-    .withMessage("Product rating average must be a number")
+    .withMessage("Product rating average must be a number.")
     .isFloat({ min: 1, max: 5 })
-    .withMessage("Rating average must be between 1 and 5"),
+    .withMessage("Rating average must be between 1 and 5."),
   check("ratingsQuantity")
     .optional()
     .isNumeric()
-    .withMessage("Product rating quantity must be a number"),
-
+    .withMessage("Product rating quantity must be a number."),
   validatorMiddleware,
 ];
 
 const updateProductValidator = [
-  check("id").isMongoId().withMessage("Invaild Product id format"),
+  check("id").isMongoId().withMessage("Invalid product ID format."),
   check("title")
     .optional()
     .isLength({ min: 3 })
-    .withMessage("Too short product title")
-
+    .withMessage("Product title must be at least 3 characters long.")
     .custom((val, { req }) => {
       req.body.slug = slugify(val);
       return true;
     }),
   check("description")
     .optional()
-
     .isLength({ max: 2000 })
-    .withMessage("Product description should not exceed 2000 characters"),
+    .withMessage("Product description should not exceed 2000 characters."),
   check("quantity")
     .optional()
     .isNumeric()
-    .withMessage("Product quantity must be a number"),
-  check("sold").optional().isNumeric(),
+    .withMessage("Product quantity must be a number."),
+  check("sold")
+    .optional()
+    .isNumeric()
+    .withMessage("Sold quantity must be a number."),
   check("price")
     .optional()
     .isNumeric()
-    .withMessage("Product price must be a number")
+    .withMessage("Product price must be a number.")
     .isLength({ max: 32 })
-    .withMessage("Product price should not exceed 32 characters"),
+    .withMessage("Product price should not exceed 32 characters."),
   check("priceAfterDiscount")
     .optional()
     .isNumeric()
-    .withMessage("Product discounted price must be a number")
-    .isFloat()
+    .withMessage("Discounted price must be a number.")
     .custom((value, { req }) => {
       if (req.body.price < value) {
-        throw new Error("Discounted price must be less than to original price");
+        throw new Error(
+          "Discounted price must be less than the original price."
+        );
       }
       return true;
     }),
   check("colors")
     .optional()
     .isArray()
-    .withMessage("available colors should be provided as array of string"),
+    .withMessage("Available colors should be provided as an array of strings."),
   check("imageCover").optional(),
-
   check("images")
     .optional()
     .isArray()
-    .withMessage("product images should be provided as array of string"),
+    .withMessage("Product images should be provided as an array of strings."),
   check("category")
     .optional()
     .isMongoId()
-    .withMessage("Invaild category id format")
+    .withMessage("Invalid category ID format.")
     .custom((categoryId) =>
       category.findById(categoryId).then((fetchedCategory) => {
         if (!fetchedCategory) {
           return Promise.reject(
-            new Error(`No category found for this id ${categoryId}`)
+            new Error(`No category found for this ID: ${categoryId}`)
           );
         }
       })
     ),
-
   check("subCategories")
     .optional()
     .isMongoId()
-    .withMessage("Invaild subcategory id format")
+    .withMessage("Invalid subcategory ID format.")
     .custom((subCategoriesIds) =>
       SubCategory.find({
         _id: { $exists: true, $in: subCategoriesIds },
       }).then((result) => {
         if (result.length < 1 || result.length !== subCategoriesIds.length) {
-          return Promise.reject(new Error(`Invalid subcategories ids`));
+          return Promise.reject(new Error("Invalid subcategory IDs."));
         }
       })
     )
     .custom((value, { req }) =>
       SubCategory.find({ category: req.body.category }).then(
         (subCategories) => {
-          const subCategoriesIdsInDb = [];
-          subCategories.forEach((subCategory) => {
-            subCategoriesIdsInDb.push(subCategory._id.toString());
-          });
+          const subCategoriesIdsInDb = subCategories.map((subCategory) =>
+            subCategory._id.toString()
+          );
           const checker = (target, arr) => target.every((v) => arr.includes(v));
           if (!checker(value, subCategoriesIdsInDb)) {
             return Promise.reject(
-              new Error("subCategories not belong to categoryId ")
+              new Error(
+                "Some subcategories do not belong to the specified category."
+              )
             );
           }
         }
       )
     ),
-  check("brand").optional().isMongoId().withMessage("Invaild brand id format"),
+  check("brand").optional().isMongoId().withMessage("Invalid brand ID format."),
   check("ratingsAverage")
     .optional()
     .isNumeric()
-    .withMessage("Product rating average must be a number")
+    .withMessage("Product rating average must be a number.")
     .isFloat({ min: 1, max: 5 })
-    .withMessage("Rating average must be between 1 and 5"),
+    .withMessage("Rating average must be between 1 and 5."),
   check("ratingsQuantity")
     .optional()
     .isNumeric()
-    .withMessage("Product rating quantity must be a number"),
+    .withMessage("Product rating quantity must be a number."),
   validatorMiddleware,
 ];
 
 const deleteProductValidator = [
-  check("id").isMongoId().withMessage("Invaild Product id format"),
+  check("id").isMongoId().withMessage("Invalid product ID format."),
   validatorMiddleware,
 ];
 

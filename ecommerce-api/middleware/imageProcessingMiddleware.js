@@ -2,6 +2,7 @@ import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
 import AsyncHandler from "express-async-handler";
 
+// Function to resize category images
 const resizeCategoryImage = () =>
   AsyncHandler(async (req, res, next) => {
     if (req.file) {
@@ -20,6 +21,7 @@ const resizeCategoryImage = () =>
     next();
   });
 
+// Function to resize brand images
 const resizeBrandImage = () =>
   AsyncHandler(async (req, res, next) => {
     if (req.file) {
@@ -37,6 +39,7 @@ const resizeBrandImage = () =>
     next();
   });
 
+// Middleware to resize product images
 const resizeProductImages = AsyncHandler(async (req, res, next) => {
   // image processing for imageCover
   if (req.files.imageCover) {

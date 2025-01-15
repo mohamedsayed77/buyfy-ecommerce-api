@@ -4,7 +4,7 @@ import SubCategoryModel from "../models/subCategoryModel.js";
 import ApiError from "../utils/ApiError.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 
-// @description    create a subcategory
+// @description    create a new subcategory
 // @route          Post  /api/v1/subcategories
 //  @access        Private
 const createSubCategory = expressAsyncHandler(async (req, res) => {
@@ -30,6 +30,7 @@ const getSubCategories = expressAsyncHandler(async (req, res) => {
   // execute the query
   const subCategories = await query;
 
+  // Send the response
   res.status(200).json({
     results: subCategories.length,
     paginationResult,

@@ -1,3 +1,4 @@
+// Function to send detailed error information in development mode
 const sendErrorForDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -6,12 +7,16 @@ const sendErrorForDev = (err, res) => {
     stack: err.stack,
   });
 };
+
+// Function to send simplified error information in production mode
 const sendErrorForProd = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
     message: err.message,
   });
 };
+
+// Global error handling middleware
 const globalError = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";

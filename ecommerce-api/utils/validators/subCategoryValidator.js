@@ -1,5 +1,4 @@
 import { check } from "express-validator";
-
 import slugify from "slugify";
 import validatorMiddleware from "../../middleware/validatorMiddleware.js";
 import categoryModel from "../../models/categoryModel.js";
@@ -7,48 +6,45 @@ import categoryModel from "../../models/categoryModel.js";
 const createSubCategoryValidator = [
   check("name")
     .notEmpty()
-    .withMessage("SubCategory name is required")
+    .withMessage("Subcategory name is required.")
     .isLength({ min: 2 })
-    .withMessage("too short Subcategory name")
+    .withMessage("Subcategory name must be at least 2 characters long.")
     .isLength({ max: 32 })
-    .withMessage("too long Subcategory name")
+    .withMessage("Subcategory name must be at most 32 characters long.")
     .custom((val, { req }) => {
       req.body.slug = slugify(val);
       return true;
     }),
-
   check("category")
     .notEmpty()
-    .withMessage("Category required")
+    .withMessage("Category is required.")
     .isMongoId()
-    .withMessage("Invaild category id format")
-    .custom((categoryId) => {
-      if (!categoryId) {
-        return true; // Skip further validation if 'categoryId' is not provided
-      }
-      return categoryModel.findById(categoryId).then((fetchedCategory) => {
+    .withMessage("Invalid category ID format.")
+    .custom((categoryId) =>
+      categoryModel.findById(categoryId).then((fetchedCategory) => {
         if (!fetchedCategory) {
           return Promise.reject(
-            new Error(`No category found for this ID ${categoryId}`)
+            new Error(`No category found for this ID: ${categoryId}`)
           );
         }
-      });
-    }),
-
+      })
+    ),
   validatorMiddleware,
 ];
+
 const getSubCategoryValidator = [
-  check("id").isMongoId().withMessage("Invaild subCategory id format"),
+  check("id").isMongoId().withMessage("Invalid subcategory ID format."),
   validatorMiddleware,
 ];
 
 const updateSubCategoryValidator = [
-  check("id").isMongoId().withMessage("Invaild subCategory id format"),
+  check("id").isMongoId().withMessage("Invalid subcategory ID format."),
   check("name")
-    .isLength({ min: 3 })
-    .withMessage("too short Subcategory name")
+    .optional()
+    .isLength({ min: 2 })
+    .withMessage("Subcategory name must be at least 2 characters long.")
     .isLength({ max: 32 })
-    .withMessage("too long Subcategory name")
+    .withMessage("Subcategory name must be at most 32 characters long.")
     .custom((val, { req }) => {
       req.body.slug = slugify(val);
       return true;
@@ -56,12 +52,12 @@ const updateSubCategoryValidator = [
   check("category")
     .optional()
     .isMongoId()
-    .withMessage("Invaild category id format")
+    .withMessage("Invalid category ID format.")
     .custom((categoryId) =>
       categoryModel.findById(categoryId).then((fetchedCategory) => {
         if (!fetchedCategory) {
           return Promise.reject(
-            new Error(`No category found for this id ${categoryId}`)
+            new Error(`No category found for this ID: ${categoryId}`)
           );
         }
       })
@@ -70,7 +66,7 @@ const updateSubCategoryValidator = [
 ];
 
 const deleteSubCategoryValidator = [
-  check("id").isMongoId().withMessage("Invaild subCategory id format"),
+  check("id").isMongoId().withMessage("Invalid subcategory ID format."),
   validatorMiddleware,
 ];
 

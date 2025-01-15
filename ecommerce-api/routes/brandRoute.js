@@ -17,11 +17,14 @@ const {
 const { getBrands, createBrand, getBrand, updateBrand, deleteBrand } =
   brandService;
 
+// Create a new router instance
 const router = express.Router();
 
+// Define routes for brands
 router
   .route("/")
   .get(getBrands)
+  // Upload image, resize it, validate request, and create a brand
   .post(
     uploadSingleImage("image"),
     resizeBrandImage(),
@@ -29,10 +32,11 @@ router
     createBrand
   );
 
+// Define routes for a specific brand by ID
 router
   .route("/:id")
   .get(getBrandValidator, getBrand)
-
+  // Upload image, resize it, validate request, and update a brand by ID
   .put(
     uploadSingleImage("image"),
     resizeBrandImage(),
