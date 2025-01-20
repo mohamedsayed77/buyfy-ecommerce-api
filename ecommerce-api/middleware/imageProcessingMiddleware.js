@@ -2,6 +2,22 @@ import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
 import AsyncHandler from "express-async-handler";
 
+const resizeProfileImage = () =>
+  AsyncHandler(async (req, res, next) => {
+    if (req.file) {
+      const filename = `profile-${uuidv4()}-${Date.now()}.jpeg`;
+
+      await sharp(req.file.buffer)
+        .resize(1920, 600)
+        .toFormat("jpeg")
+        .jpeg({ quality: 95 })
+        .toFile(`uploads/profiles/${filename}`);
+
+      // save the image to the database
+      req.body.profileImg = filename;
+    }
+    next();
+  });
 // Function to resize category images
 const resizeCategoryImage = () =>
   AsyncHandler(async (req, res, next) => {
@@ -76,4 +92,9 @@ const resizeProductImages = AsyncHandler(async (req, res, next) => {
   next();
 });
 
-export default { resizeCategoryImage, resizeBrandImage, resizeProductImages };
+export default {
+  resizeCategoryImage,
+  resizeBrandImage,
+  resizeProductImages,
+  resizeProfileImage,
+};
