@@ -78,8 +78,27 @@ const loginValidator = [
 
   validatorMiddleware,
 ];
+const forgetPaswordValidator = [
+  check("email")
+    .notEmpty()
+    .withMessage("Email is required.")
+    .isEmail()
+    .withMessage("Please enter a valid email address.")
+    .custom((val) =>
+      User.findOne({ email: val }).then((user) => {
+        if (!user) {
+          return Promise.reject(new Error("No user found with this email."));
+        }
+        return true;
+      })
+    ),
+
+  validatorMiddleware,
+];
 
 export default {
   signupValidator,
   loginValidator,
+
+  forgetPaswordValidator,
 };

@@ -1,11 +1,12 @@
 import AsyncHandler from "express-async-handler";
 import bcrypt from "bcryptjs";
-import crypto from "crypto";
 
 import userModel from "../models/userModel.js";
 import ApiError from "../utils/ApiError.js";
-
+import hashCode from "../utils/hash.js";
+import sendEmail from "../utils/sendEmail.js";
 import jwt from "../utils/generateJwt.js";
+import mailContent from "../utils/mailContent.js";
 
 // @description    signup
 // @route          Post  /api/v1/auth/signup
@@ -72,7 +73,69 @@ const login = AsyncHandler(async (req, res, next) => {
   res.status(200).json({ data: user, token });
 });
 
+// @description    forget password
+// @route          Post  /api/v1/auth/forgotPassword
+//  @access        Public
+const forgetPassword = AsyncHandler(async (req, res, next) => {
+  // 1) get user by email
+  const user = await userModel.findOne({ email: req.body.email });
+
+  if (!user) {
+    return next(new ApiError("No user found with this email", 404));
+  }
+
+  // 2) if user exists, generate random 6 digits and save it in db
+  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const hashedResetCode = hashCode(resetCode);
+  console.log(hashedResetCode);
+
+  user.passwordResetCode = hashedResetCode;
+  user.passwordResetExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+  user.passwordResetVerified = false;
+  await user.save();
+
+  // 3) send the reset code via email
+  const html = mailContent(user.name, resetCode);
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: "Reset Password",
+      html: html,
+    });
+    res.status(200).json({
+      status: "success",
+      message: "Reset password code sent successfully",
+    });
+  } catch (error) {
+    user.passwordResetCode = undefined;
+    user.passwordResetExpiresAt = undefined;
+    user.passwordResetVerified = undefined;
+    await user.save();
+    return next(new ApiError("Failed to send email", 500));
+  }
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: "Reset Password",
+      html: html,
+    });
+    res.status(200).json({
+      status: "success",
+      message: "Reset password code sent successfully",
+    });
+  } catch (error) {
+    user.passwordResetCode = undefined;
+    user.passwordResetExpiresAt = undefined;
+    user.passwordResetVerified = undefined;
+    await user.save();
+    return next(new ApiError("Failed to send email", 500));
+  }
+});
+
 export default {
   signup,
   login,
+  forgetPassword,
 };
