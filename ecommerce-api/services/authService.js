@@ -41,14 +41,28 @@ const login = AsyncHandler(async (req, res, next) => {
   }
 
   if (!user.active) {
-    setTimeout(async () => {
-      user.active = true;
-      await user.save(); // Save changes to the database
-    }, 60000);
+    if (!user.reactivationInProgress) {
+      // Set the reactivationInProgress flag
+      user.reactivationInProgress = true;
+      await user.save();
 
+      setTimeout(async () => {
+        user.active = true;
+        user.reactivationInProgress = false;
+        await user.save(); // Save changes to the database
+        console.log("User account reactivated");
+      }, 60000);
+
+      return next(
+        new ApiError(
+          "Your account is currently deactivated. It will be reactivated in 1 minute.",
+          403
+        )
+      );
+    }
     return next(
       new ApiError(
-        "Your account is currently deactivated. It will be reactivated in 1 minute.",
+        "Your account is currently being reactivated. Please wait a moment.",
         403
       )
     );
