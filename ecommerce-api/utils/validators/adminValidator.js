@@ -180,10 +180,15 @@ const changePasswordValidator = [
 
   validatorMiddleware,
 ];
+const deleteUserValidator = [
+  check("id").isMongoId().withMessage("Invalid User ID format."),
+  validatorMiddleware,
+];
 
 export default {
   createUserValidator,
   getUserValidator,
   changePasswordValidator,
   updateUserValidator,
+  deleteUserValidator,
 };

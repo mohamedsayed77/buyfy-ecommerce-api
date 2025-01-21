@@ -11,7 +11,7 @@ import categoryRoute from "./routes/categoryRoute.js";
 import subCategoryRoute from "./routes/subCategoryRoute.js";
 import brandRoute from "./routes/brandRoute.js";
 import productRoute from "./routes/productRoute.js";
-import userRoute from "./routes/userRoute.js";
+import adminRoute from "./routes/adminRoute.js";
 import authRoute from "./routes/authRoute.js";
 
 // Load environment variables from the .env file
@@ -39,7 +39,7 @@ app.use("/api/v1/categories", categoryRoute);
 app.use("/api/v1/subcategories", subCategoryRoute);
 app.use("/api/v1/brands", brandRoute);
 app.use("/api/v1/products", productRoute);
-app.use("/api/v1/users", userRoute);
+app.use("/api/v1/admin", adminRoute);
 app.use("/api/v1/auth", authRoute);
 
 // Handle all undefined routes

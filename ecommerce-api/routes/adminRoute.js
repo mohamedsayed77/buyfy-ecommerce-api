@@ -1,7 +1,7 @@
 import express from "express";
 
-import userService from "../services/userService.js";
-import userValidator from "../utils/validators/userValidator.js";
+import adminService from "../services/adminService.js";
+import adminValidator from "../utils/validators/adminValidator.js";
 import uploadMiddleware from "../middleware/uploadMiddleware.js";
 import resizeImage from "../middleware/imageProcessingMiddleware.js";
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -14,18 +14,22 @@ const {
   getUserValidator,
   updateUserValidator,
   changePasswordValidator,
-} = userValidator;
+  deleteUserValidator,
+} = adminValidator;
 
-const { getUsers, createUser, getUser, updateUser, changeUserPassword } =
-  userService;
+const {
+  getUsers,
+  createUser,
+  getUser,
+  updateUser,
+  changePassword,
+  deleteUser,
+} = adminService;
 
 const router = express.Router();
 
 // admin
-router.use(
-  authMiddleware.protect,
-  authMiddleware.allowedTo("admin", "manager")
-);
+router.use(authMiddleware.protect, authMiddleware.allowedTo("admin"));
 
 router
   .route("/")
@@ -45,8 +49,9 @@ router
     resizeProfileImage(),
     updateUserValidator,
     updateUser
-  );
+  )
+  .delete(deleteUserValidator, deleteUser);
 
-router.put("/changepassword/:id", changePasswordValidator, changeUserPassword);
+router.put("/changepassword/:id", changePasswordValidator, changePassword);
 
 export default router;

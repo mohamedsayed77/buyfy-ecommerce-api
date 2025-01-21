@@ -1,22 +1,21 @@
 import AsyncHandler from "express-async-handler";
 import bcrypt from "bcryptjs";
-import jwt from "../utils/generateJwt.js";
 
 import userModel from "../models/userModel.js";
 import ApiError from "../utils/ApiError.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 
 // @description    create a new user
-// @route          Post  /api/v1/users
-//  @access        Private
+// @route          Post  /api/v1/admin
+//  @access        admin only
 const createUser = AsyncHandler(async (req, res) => {
   const user = await userModel.create(req.body);
   res.status(201).json({ data: user });
 });
 
 // @discussion   Get list of users
-// @route        Get /api/v1/users
-// @access       public
+// @route        Get /api/v1/admin
+// @access       admin only
 const getUsers = AsyncHandler(async (req, res) => {
   // build the query
   const documentsCount = await userModel.countDocuments();
@@ -38,8 +37,8 @@ const getUsers = AsyncHandler(async (req, res) => {
 });
 
 // @discussion   Get specific user by id
-// @route        Get /api/v1/users/:id
-// @access       public
+// @route        Get /api/v1/admin/:id
+// @access       admin only
 const getUser = AsyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
@@ -52,9 +51,9 @@ const getUser = AsyncHandler(async (req, res, next) => {
   res.status(200).json({ data: user });
 });
 
-// @description    update specific user
-// @route          Post  /api/v1/users/:id
-// @access        private
+// @description    update specific user by id
+// @route          Post  /api/v1/admin/:id
+// @access        admin only
 const updateUser = AsyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
@@ -80,10 +79,10 @@ const updateUser = AsyncHandler(async (req, res, next) => {
   res.status(200).json({ data: user });
 });
 
-// @description    update specific user
-// @route          Post  /api/v1/users/:id
-// @access        private
-const changeUserPassword = AsyncHandler(async (req, res, next) => {
+// @description    change password for specific user by id
+// @route          Post  /api/v1/admin/:id
+// @access        admin only
+const changePassword = AsyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
   const user = await userModel.findOneAndUpdate(
@@ -103,11 +102,23 @@ const changeUserPassword = AsyncHandler(async (req, res, next) => {
 
   res.status(200).json({ data: user });
 });
+const deleteUser = AsyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  const user = await userModel.findByIdAndDelete(id);
+
+  if (!user) {
+    return next(new ApiError(`No user for this id ${id}`, 404));
+  }
+
+  res.status(204).send();
+});
 
 export default {
   createUser,
   getUsers,
   getUser,
   updateUser,
-  changeUserPassword,
+  changePassword,
+  deleteUser,
 };
