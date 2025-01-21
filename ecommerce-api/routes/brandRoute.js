@@ -3,6 +3,7 @@ import brandService from "../services/brandService.js";
 import brandValidator from "../utils/validators/brandValidator.js";
 import uploadMiddleware from "../middleware/uploadMiddleware.js";
 import resizeImage from "../middleware/imageProcessingMiddleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const { uploadSingleImage } = uploadMiddleware;
 const { resizeBrandImage } = resizeImage;
@@ -26,6 +27,8 @@ router
   .get(getBrands)
   // Upload image, resize it, validate request, and create a brand
   .post(
+    authMiddleware.protect,
+    authMiddleware.allowedTo("admin", "manager"),
     uploadSingleImage("image"),
     resizeBrandImage(),
     createBrandValidator,
@@ -38,11 +41,18 @@ router
   .get(getBrandValidator, getBrand)
   // Upload image, resize it, validate request, and update a brand by ID
   .put(
+    authMiddleware.protect,
+    authMiddleware.allowedTo("admin", "manager"),
     uploadSingleImage("image"),
     resizeBrandImage(),
     updateBrandValidator,
     updateBrand
   )
-  .delete(deleteBrandValidator, deleteBrand);
+  .delete(
+    authMiddleware.protect,
+    authMiddleware.allowedTo("admin", "manager"),
+    deleteBrandValidator,
+    deleteBrand
+  );
 
 export default router;

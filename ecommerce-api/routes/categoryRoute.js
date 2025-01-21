@@ -5,6 +5,7 @@ import categoryValidator from "../utils/validators/categoryValidator.js";
 import subCategoriesRoute from "./subCategoryRoute.js";
 import uploadMiddleware from "../middleware/uploadMiddleware.js";
 import resizeImage from "../middleware/imageProcessingMiddleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const { uploadSingleImage } = uploadMiddleware;
 const { resizeCategoryImage } = resizeImage;
@@ -34,6 +35,8 @@ router
   .get(getCategories)
   // Upload image, resize it, validate request, and create a category
   .post(
+    authMiddleware.protect,
+    authMiddleware.allowedTo("admin", "manger"),
     uploadSingleImage("image"),
     resizeCategoryImage(),
     createCategoryValidator,
@@ -47,11 +50,18 @@ router
 
   // Upload image, resize it, validate request, and update a category by ID
   .put(
+    authMiddleware.protect,
+    authMiddleware.allowedTo("admin", "manger"),
     uploadSingleImage("image"),
     resizeCategoryImage(),
     updateCategoryValidator,
     updateCategory
   )
-  .delete(deleteCategoryValidator, deleteCategory);
+  .delete(
+    authMiddleware.protect,
+    authMiddleware.allowedTo("admin", "manger"),
+    deleteCategoryValidator,
+    deleteCategory
+  );
 
 export default router;

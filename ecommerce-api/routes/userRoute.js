@@ -4,6 +4,7 @@ import userService from "../services/userService.js";
 import userValidator from "../utils/validators/userValidator.js";
 import uploadMiddleware from "../middleware/uploadMiddleware.js";
 import resizeImage from "../middleware/imageProcessingMiddleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const { uploadSingleImage } = uploadMiddleware;
 const { resizeProfileImage } = resizeImage;
@@ -20,7 +21,11 @@ const { getUsers, createUser, getUser, updateUser, changeUserPassword } =
 
 const router = express.Router();
 
-// addmin
+// admin
+router.use(
+  authMiddleware.protect,
+  authMiddleware.allowedTo("admin", "manager")
+);
 
 router
   .route("/")

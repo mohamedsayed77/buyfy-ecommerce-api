@@ -4,6 +4,7 @@ import productService from "../services/productService.js";
 import productValidator from "../utils/validators/productValidator.js";
 import uploadMiddleware from "../middleware/uploadMiddleware.js";
 import resizeImage from "../middleware/imageProcessingMiddleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const { uploadMixImages } = uploadMiddleware;
 const { resizeProductImages } = resizeImage;
@@ -31,6 +32,8 @@ router
   .get(getProducts)
   // Upload images, resize them, validate request, and create a product
   .post(
+    authMiddleware.protect,
+    authMiddleware.allowedTo("admin", "manager"),
     uploadProductsImages,
     resizeProductImages,
     createProductValidator,
@@ -43,11 +46,18 @@ router
   .get(getProductValidator, getProduct)
   // Upload images, resize them, validate request, and update a product by ID
   .put(
+    authMiddleware.protect,
+    authMiddleware.allowedTo("admin", "manager"),
     uploadProductsImages,
     resizeProductImages,
     updateProductValidator,
     updateProduct
   )
-  .delete(deleteProductValidator, deleteProduct);
+  .delete(
+    authMiddleware.protect,
+    authMiddleware.allowedTo("admin", "manager"),
+    deleteProductValidator,
+    deleteProduct
+  );
 
 export default router;
