@@ -28,6 +28,13 @@ const changeMyPasswordValidator = [
     .withMessage("New password is required.")
     .isLength({ min: 8 })
     .withMessage("New password must be at least 8 characters long.")
+    .matches(/\d/)
+    .withMessage("Password must contain at least one number")
+    .matches(/[A-Z]/)
+    .withMessage("Password must contain at least one uppercase letter")
+    .matches(/[a-z]/)
+    .withMessage("Password must contain at least one lowercase letter")
+
     .custom((pass, { req }) => {
       if (req.body.currentPassword && req.body.newPasswordConfirm) {
         if (pass !== req.body.newPasswordConfirm) {
@@ -54,7 +61,7 @@ const changeMyPasswordValidator = [
       return true;
     }),
 
-  check("newPasswordConfirm")
+  check("confirmPassword")
     .notEmpty()
     .withMessage("Please confirm your new password."),
 

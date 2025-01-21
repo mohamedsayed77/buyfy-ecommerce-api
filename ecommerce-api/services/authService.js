@@ -114,28 +114,38 @@ const forgetPassword = AsyncHandler(async (req, res, next) => {
     await user.save();
     return next(new ApiError("Failed to send email", 500));
   }
+});
 
-  try {
-    await sendEmail({
-      email: user.email,
-      subject: "Reset Password",
-      html: html,
-    });
-    res.status(200).json({
-      status: "success",
-      message: "Reset password code sent successfully",
-    });
-  } catch (error) {
-    user.passwordResetCode = undefined;
-    user.passwordResetExpiresAt = undefined;
-    user.passwordResetVerified = undefined;
-    await user.save();
-    return next(new ApiError("Failed to send email", 500));
+const resetPassword = AsyncHandler(async (req, res, next) => {
+  const { email, resetCode, newPassword } = req.body;
+
+  const hashedResetCode = hashCode(resetCode);
+  const user = await userModel.findOne({
+    email,
+    passwordResetCode: hashedResetCode,
+    passwordResetExpiresAt: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(new ApiError("Invalid or expired reset code", 400));
   }
+
+  user.password = newPassword;
+  user.passwordResetCode = undefined;
+  user.passwordResetExpiresAt = undefined;
+  await user.save();
+
+  const token = jwt.createToken(user._id);
+  res.status(200).json({
+    token,
+    status: "success",
+    message: "Password reset successfully",
+  });
 });
 
 export default {
   signup,
   login,
   forgetPassword,
+  resetPassword,
 };

@@ -88,7 +88,7 @@ const changePassword = AsyncHandler(async (req, res, next) => {
   const user = await userModel.findOneAndUpdate(
     { _id: id },
     {
-      password: await bcrypt.hash(req.body.password, 12),
+      password: await bcrypt.hash(req.body.newPassword, 12),
       passwordChangedAt: Date.now(),
     },
     {

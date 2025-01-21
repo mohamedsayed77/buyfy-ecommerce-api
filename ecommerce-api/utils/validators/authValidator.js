@@ -48,7 +48,12 @@ const signupValidator = [
     .notEmpty()
     .withMessage("Password is required.")
     .isLength({ min: 8 })
-    .withMessage("Password must be at least 8 characters long.")
+    .withMessage("New password must be at least 8 characters long.")
+    .matches(/\d/)
+    .withMessage("Password must contain at least one number")
+    .matches(/[A-Z]/)
+    .withMessage("Password must contain at least one uppercase letter")
+
     .custom((pass, { req }) => {
       if (pass !== req.body.confirmPassword) {
         throw new Error("Passwords do not match. Please try again.");
@@ -96,9 +101,42 @@ const forgetPaswordValidator = [
   validatorMiddleware,
 ];
 
+const resetPasswordValidator = [
+  check("resetCode").notEmpty().withMessage("Verification code is required."),
+  check("email")
+    .notEmpty()
+    .withMessage("Email is required.")
+    .isEmail()
+    .withMessage("Please enter a valid email address."),
+
+  check("newPassword")
+    .notEmpty()
+    .withMessage("New password is required.")
+    .isLength({ min: 8 })
+    .withMessage("New password must be at least 8 characters long.")
+    .matches(/\d/)
+    .withMessage("Password must contain at least one number")
+    .matches(/[A-Z]/)
+    .withMessage("Password must contain at least one uppercase letter")
+
+    .custom((pass, { req }) => {
+      if (pass) {
+        if (pass !== req.body.confirmPassword) {
+          throw new Error("New password confirmation does not match.");
+        }
+      }
+      return true;
+    }),
+  check("confirmPassword")
+    .notEmpty()
+    .withMessage("Please confirm your new password."),
+
+  validatorMiddleware,
+];
+
 export default {
   signupValidator,
   loginValidator,
-
   forgetPaswordValidator,
+  resetPasswordValidator,
 };
