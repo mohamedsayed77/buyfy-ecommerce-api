@@ -28,6 +28,14 @@ const userSchema = new mongoose.Schema({
   passwordResetCode: String,
   passwordResetExpiresAt: Date,
 
+  // child references: 1 to many
+  wishlist: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+    },
+  ],
+
   role: {
     type: String,
     enum: ["user", "manger", "admin"],

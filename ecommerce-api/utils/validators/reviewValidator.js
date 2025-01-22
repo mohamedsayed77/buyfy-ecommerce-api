@@ -15,19 +15,23 @@ const createReviewValidator = [
   check("product")
     .isMongoId()
     .withMessage("Invalid Review id format")
-    .custom((val, { req }) =>
+    .custom((val, { req }) => {
+      if (req.user.role === "admin") {
+        return true;
+      }
       // Check if logged user create review before
-      Review.findOne({ user: req.user._id, product: req.body.product }).then(
-        (review) => {
-          console.log(review);
-          if (review) {
-            return Promise.reject(
-              new Error("You already created a review before")
-            );
-          }
+      return Review.findOne({
+        user: req.user._id,
+        product: req.body.product,
+      }).then((review) => {
+        console.log(review);
+        if (review) {
+          return Promise.reject(
+            new Error("You already created a review before")
+          );
         }
-      )
-    ),
+      });
+    }),
   validatorMiddleware,
 ];
 
@@ -40,9 +44,12 @@ const updateReviewValidator = [
   check("id")
     .isMongoId()
     .withMessage("Invalid Review id format")
-    .custom((val, { req }) =>
-      // Check review ownership before update
-      Review.findById(val).then((review) => {
+    .custom((val, { req }) => {
+      if (req.user.role === "admin") {
+        return true;
+      }
+
+      return Review.findById(val).then((review) => {
         if (!review) {
           return Promise.reject(new Error(`There is no review with id ${val}`));
         }
@@ -52,8 +59,8 @@ const updateReviewValidator = [
             new Error(`Your are not allowed to perform this action`)
           );
         }
-      })
-    ),
+      });
+    }),
   validatorMiddleware,
 ];
 
