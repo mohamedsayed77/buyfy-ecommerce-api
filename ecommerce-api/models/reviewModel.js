@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
-const reviewSchema =
-  ({
+const reviewSchema = new mongoose.Schema(
+  {
     title: {
       type: String,
     },
@@ -22,7 +22,16 @@ const reviewSchema =
       required: [true, "Review must belong to a product."],
     },
   },
-  { timestamps: true });
+  { timestamps: true }
+);
+reviewSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "user",
+    select: "name -_id",
+  });
+
+  next();
+});
 
 const reviewModel = mongoose.model("Review", reviewSchema);
 export default reviewModel;

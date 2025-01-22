@@ -14,6 +14,7 @@ import productRoute from "./routes/productRoute.js";
 import adminRoute from "./routes/adminRoute.js";
 import authRoute from "./routes/authRoute.js";
 import meRoute from "./routes/meRoute.js";
+import reviewRoute from "./routes/reviewRoute.js";
 
 // Load environment variables from the .env file
 dotenv.config();
@@ -43,6 +44,7 @@ app.use("/api/v1/products", productRoute);
 app.use("/api/v1/admin", adminRoute);
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/me", meRoute);
+app.use("/api/v1/reviews", reviewRoute);
 
 // Handle all undefined routes
 app.all("*", (req, res, next) => {
