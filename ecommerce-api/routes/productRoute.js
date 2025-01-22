@@ -5,6 +5,7 @@ import productValidator from "../utils/validators/productValidator.js";
 import uploadMiddleware from "../middleware/uploadMiddleware.js";
 import resizeImage from "../middleware/imageProcessingMiddleware.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import reviewRoute from "./reviewRoute.js";
 
 const { uploadMixImages } = uploadMiddleware;
 const { resizeProductImages } = resizeImage;
@@ -25,6 +26,8 @@ const uploadProductsImages = uploadMixImages([
 
 // Create a new router instance
 const router = express.Router();
+
+router.use("/:productId/reviews", reviewRoute);
 
 // Define routes for products
 router

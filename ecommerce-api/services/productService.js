@@ -24,6 +24,8 @@ const getProducts = expressAsyncHandler(async (req, res) => {
     .sort()
     .limitFields();
 
+  apiFeatures.query = apiFeatures.query.populate("reviews");
+
   const { query, paginationResult } = apiFeatures;
 
   // execute the query
@@ -40,7 +42,7 @@ const getProducts = expressAsyncHandler(async (req, res) => {
 const getProduct = expressAsyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
-  const product = await ProductModel.findById(id);
+  const product = await ProductModel.findById(id).populate("reviews");
 
   if (!product) {
     return next(new ApiError(`No product for this id ${id}`, 404));

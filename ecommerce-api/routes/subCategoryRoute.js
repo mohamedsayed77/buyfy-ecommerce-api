@@ -2,10 +2,10 @@ import express from "express";
 
 import SubCategoryService from "../services/subCategoryService.js";
 import SubCategoryValidators from "../utils/validators/subCategoryValidator.js";
-import subCategoryMiddleware from "../middleware/subCategoryMiddleware.js";
+import filterByMiddleware from "../middleware/filterByMiddleware.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
-const { setCategoryId, filterByCategory } = subCategoryMiddleware;
+const { setCategoryId, filterByCategory } = filterByMiddleware;
 const {
   createSubCategoryValidator,
   getSubCategoryValidator,

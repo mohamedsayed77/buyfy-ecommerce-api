@@ -82,14 +82,24 @@ const productSchema = new mongoose.Schema(
       default: 0,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    //  to enable virtual population
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+productSchema.virtual("reviews", {
+  ref: "Review",
+  localField: "_id",
+  foreignField: "product",
+});
 
 // Mongoose middleware that populates the category field with its name
 productSchema.pre(/^find/, function (next) {
   this.populate({
     path: "category",
-    select: "name -_id",
+    select: "name ",
   });
   next();
 });

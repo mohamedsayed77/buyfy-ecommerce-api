@@ -2,87 +2,88 @@ import { check } from "express-validator";
 
 import validatorMiddleware from "../../middleware/validatorMiddleware.js";
 
-import reviewModel from "../../models/reviewModel.js";
+import Review from "../../models/reviewModel.js";
 
-const createreviewValidator = [
+const createReviewValidator = [
   check("title").optional(),
   check("ratings")
     .notEmpty()
-    .withMessage("ratings is required")
+    .withMessage("ratings value required")
     .isFloat({ min: 1, max: 5 })
     .withMessage("Ratings value must be between 1 to 5"),
-  check("user").isMongoId().withMessage("Invalid review ID format."),
+  check("user").isMongoId().withMessage("Invalid Review id format"),
   check("product")
     .isMongoId()
-    .withMessage("Invalid review ID format.")
+    .withMessage("Invalid Review id format")
     .custom((val, { req }) =>
-      reviewModel
-        .findOne({ user: req.user._id, product: req.body.product })
-        .then((review) => {
+      // Check if logged user create review before
+      Review.findOne({ user: req.user._id, product: req.body.product }).then(
+        (review) => {
+          console.log(review);
           if (review) {
             return Promise.reject(
-              new Error("You have already reviewed this product.")
+              new Error("You already created a review before")
             );
           }
-        })
+        }
+      )
     ),
-
   validatorMiddleware,
 ];
 
-const getreviewValidator = [
-  check("id").isMongoId().withMessage("Invalid review ID format."),
+const getReviewValidator = [
+  check("id").isMongoId().withMessage("Invalid Review id format"),
   validatorMiddleware,
 ];
 
-const updatereviewValidator = [
+const updateReviewValidator = [
   check("id")
     .isMongoId()
-    .withMessage("Invalid review ID format.")
+    .withMessage("Invalid Review id format")
     .custom((val, { req }) =>
-      reviewModel.findById(val).then((review) => {
+      // Check review ownership before update
+      Review.findById(val).then((review) => {
         if (!review) {
-          return Promise.reject(
-            new Error(` No review found for this id ${val}."`)
-          );
+          return Promise.reject(new Error(`There is no review with id ${val}`));
         }
-        if (review.user.toString() !== req.user._id.toString()) {
+
+        if (review.user._id.toString() !== req.user._id.toString()) {
           return Promise.reject(
-            new Error("You are not authorized to update this review.")
+            new Error(`Your are not allowed to perform this action`)
           );
         }
       })
     ),
-
   validatorMiddleware,
 ];
 
-const deletereviewValidator = [
+const deleteReviewValidator = [
   check("id")
     .isMongoId()
-    .withMessage("Invalid review ID format.")
+    .withMessage("Invalid Review id format")
     .custom((val, { req }) => {
+      // Check review ownership before update
       if (req.user.role === "user") {
-        return reviewModel.findById(val).then((review) => {
+        return Review.findById(val).then((review) => {
           if (!review) {
             return Promise.reject(
-              new Error(` No review found for this id ${val}."`)
+              new Error(`There is no review with id ${val}`)
             );
           }
-          if (review.user.toString() !== req.user._id.toString()) {
+          if (review.user._id.toString() !== req.user._id.toString()) {
             return Promise.reject(
-              new Error("You are not authorized to delete this review.")
+              new Error(`Your are not allowed to perform this action`)
             );
           }
         });
       }
+      return true;
     }),
   validatorMiddleware,
 ];
-
 export default {
-  getreviewValidator,
-  createreviewValidator,
-  updatereviewValidator,
-  deletereviewValidator,
+  createReviewValidator,
+  getReviewValidator,
+  updateReviewValidator,
+  deleteReviewValidator,
 };
