@@ -42,7 +42,7 @@ const changeMyPasswordValidator = [
           "New password cannot be the same as the current password."
         );
       }
-      if (newPassword !== req.body.newPasswordConfirm) {
+      if (newPassword !== req.body.confirmPassword) {
         throw new Error("New password confirmation does not match.");
       }
       return true;
