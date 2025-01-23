@@ -35,8 +35,7 @@ const changeMyPasswordValidator = [
     .withMessage("New password must contain at least one number.")
     .matches(/[A-Z]/)
     .withMessage("New password must contain at least one uppercase letter.")
-    .matches(/[a-z]/)
-    .withMessage("New password must contain at least one lowercase letter.")
+
     .custom((newPassword, { req }) => {
       if (newPassword === req.body.currentPassword) {
         throw new Error(
