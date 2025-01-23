@@ -9,7 +9,12 @@
     "start:dev": "nodemon server.js",
     "start:prod": "NODE_ENV=production node server.js",
     "lint": "eslint.",
-    "fix": "eslint --fix."
+    "fix": "eslint --fix.",
+    "test": "jest"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "verbose": true
   },
   "author": "Mohamed Sayed",
   "license": "ISC",
