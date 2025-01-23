@@ -3,20 +3,31 @@ import ProductModel from "../models/productModel.js";
 import ApiError from "../utils/ApiError.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 
-// @description    create a product
-// @route          Post  /api/v1/products
-//  @access        Private
+/**
+ * @description    Create a new product
+ * @route          POST /api/v1/products
+ * @access         Private (Admin/Manager)
+ */
 const createProduct = expressAsyncHandler(async (req, res) => {
   const product = await ProductModel.create(req.body);
-  res.status(201).json({ data: product });
+
+  res.status(201).json({
+    status: "success",
+    message: "Product created successfully.",
+    data: product,
+  });
 });
 
-// @discussion   Get list of products
-// @route        Get /api/v1/products
-// @access       public
+/**
+ * @description    Get a list of products with filters, pagination, and sorting
+ * @route          GET /api/v1/products
+ * @access         Public
+ */
 const getProducts = expressAsyncHandler(async (req, res) => {
-  // build the query
+  // Count total documents for pagination
   const documentsCount = await ProductModel.countDocuments();
+
+  // Build query features
   const apiFeatures = new ApiFeatures(ProductModel.find(), req.query)
     .paginate(documentsCount)
     .filter()
@@ -24,64 +35,84 @@ const getProducts = expressAsyncHandler(async (req, res) => {
     .sort()
     .limitFields();
 
+  // Populate reviews for each product
   apiFeatures.query = apiFeatures.query.populate("reviews");
 
   const { query, paginationResult } = apiFeatures;
 
-  // execute the query
+  // Execute the query
   const products = await query;
 
-  res
-    .status(200)
-    .json({ results: products.length, paginationResult, data: products });
+  res.status(200).json({
+    status: "success",
+    results: products.length,
+    paginationResult,
+    data: products,
+  });
 });
 
-// @discussion   Get specific product by id
-// @route        Get /api/v1/products/:id
-// @access       public
+/**
+ * @description    Get a specific product by ID
+ * @route          GET /api/v1/products/:id
+ * @access         Public
+ */
 const getProduct = expressAsyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
   const product = await ProductModel.findById(id).populate("reviews");
 
   if (!product) {
-    return next(new ApiError(`No product for this id ${id}`, 404));
+    return next(new ApiError(`No product found with ID: ${id}`, 404));
   }
 
-  res.status(200).json({ data: product });
+  res.status(200).json({
+    status: "success",
+    data: product,
+  });
 });
-// @description    update specific product
-// @route          Post  /api/v1/products/:id
-// @access        private
+
+/**
+ * @description    Update a specific product by ID
+ * @route          PUT /api/v1/products/:id
+ * @access         Private (Admin/Manager)
+ */
 const updateProduct = expressAsyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
-  const product = await ProductModel.findOneAndUpdate({ _id: id }, req.body, {
+  const product = await ProductModel.findByIdAndUpdate(id, req.body, {
     new: true,
+    runValidators: true, // Ensure validation is applied
   });
 
   if (!product) {
-    // return res.status(404).json({ message: 'Category not found' });
-    return next(new ApiError(`No product for this id ${id}`, 404));
+    return next(new ApiError(`No product found with ID: ${id}`, 404));
   }
 
-  res.status(200).json({ data: product });
+  res.status(200).json({
+    status: "success",
+    message: "Product updated successfully.",
+    data: product,
+  });
 });
 
-// @description    delete specific product
-// @route          Delete  /api/v1/products/:id
-// @access        private
+/**
+ * @description    Delete a specific product by ID
+ * @route          DELETE /api/v1/products/:id
+ * @access         Private (Admin/Manager)
+ */
 const deleteProduct = expressAsyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
   const product = await ProductModel.findByIdAndDelete(id);
 
   if (!product) {
-    // return res.status(404).json({ message: 'Category not found' });
-    return next(new ApiError(`No product for this id ${id}`, 404));
+    return next(new ApiError(`No product found with ID: ${id}`, 404));
   }
 
-  res.status(204).send();
+  res.status(204).json({
+    status: "success",
+    message: "Product deleted successfully.",
+  });
 });
 
 export default {

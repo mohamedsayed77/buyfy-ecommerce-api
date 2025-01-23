@@ -4,18 +4,19 @@ import slugify from "slugify";
 import validatorMiddleware from "../../middleware/validatorMiddleware.js";
 import User from "../../models/userModel.js";
 
-// Validator for creating a new user
+/**
+ * Validator for user signup
+ */
 const signupValidator = [
   check("name")
     .notEmpty()
-    .withMessage("Please provide your name.")
+    .withMessage("Name is required.")
     .isLength({ min: 2 })
     .withMessage("Name must be at least 2 characters long.")
     .custom((val, { req }) => {
       if (val) {
-        req.body.slug = slugify(val);
+        req.body.slug = slugify(val); // Generate a slug from the name
       }
-
       return true;
     })
     .custom((val) =>
@@ -48,12 +49,11 @@ const signupValidator = [
     .notEmpty()
     .withMessage("Password is required.")
     .isLength({ min: 8 })
-    .withMessage("New password must be at least 8 characters long.")
+    .withMessage("Password must be at least 8 characters long.")
     .matches(/\d/)
-    .withMessage("Password must contain at least one number")
+    .withMessage("Password must contain at least one number.")
     .matches(/[A-Z]/)
-    .withMessage("Password must contain at least one uppercase letter")
-
+    .withMessage("Password must contain at least one uppercase letter.")
     .custom((pass, { req }) => {
       if (pass !== req.body.confirmPassword) {
         throw new Error("Passwords do not match. Please try again.");
@@ -68,6 +68,9 @@ const signupValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validator for user login
+ */
 const loginValidator = [
   check("email")
     .notEmpty()
@@ -83,6 +86,10 @@ const loginValidator = [
 
   validatorMiddleware,
 ];
+
+/**
+ * Validator for forgetting password
+ */
 const forgetPaswordValidator = [
   check("email")
     .notEmpty()
@@ -101,8 +108,12 @@ const forgetPaswordValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validator for resetting password
+ */
 const resetPasswordValidator = [
   check("resetCode").notEmpty().withMessage("Verification code is required."),
+
   check("email")
     .notEmpty()
     .withMessage("Email is required.")
@@ -115,18 +126,16 @@ const resetPasswordValidator = [
     .isLength({ min: 8 })
     .withMessage("New password must be at least 8 characters long.")
     .matches(/\d/)
-    .withMessage("Password must contain at least one number")
+    .withMessage("Password must contain at least one number.")
     .matches(/[A-Z]/)
-    .withMessage("Password must contain at least one uppercase letter")
-
+    .withMessage("Password must contain at least one uppercase letter.")
     .custom((pass, { req }) => {
-      if (pass) {
-        if (pass !== req.body.confirmPassword) {
-          throw new Error("New password confirmation does not match.");
-        }
+      if (pass !== req.body.confirmPassword) {
+        throw new Error("New password confirmation does not match.");
       }
       return true;
     }),
+
   check("confirmPassword")
     .notEmpty()
     .withMessage("Please confirm your new password."),

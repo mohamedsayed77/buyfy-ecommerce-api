@@ -5,6 +5,7 @@ import SubCategoryValidators from "../utils/validators/subCategoryValidator.js";
 import filterByMiddleware from "../middleware/filterByMiddleware.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
+// Destructure necessary utilities and services
 const { setCategoryId, filterByCategory } = filterByMiddleware;
 const {
   createSubCategoryValidator,
@@ -12,7 +13,6 @@ const {
   updateSubCategoryValidator,
   deleteSubCategoryValidator,
 } = SubCategoryValidators;
-
 const {
   createSubCategory,
   getSubCategories,
@@ -21,37 +21,48 @@ const {
   deleteSubCategory,
 } = SubCategoryService;
 
-// Create a new router instance, merging params from parent routers
+// Create a new router instance, supporting route parameter merging
 const router = express.Router({ mergeParams: true });
 
+/**
+ * Route: /api/v1/categories/:categoryId/subcategories or /api/v1/subcategories
+ * - GET: Retrieve all subcategories (optionally filtered by category).
+ * - POST: Create a new subcategory (requires authentication and admin/manager role).
+ */
 router
   .route("/")
-  // Filter middleware to get subcategories by category and get all subcategories
-  .get(filterByCategory, getSubCategories)
-  // Set the category ID if not in request body, validate the request, then create subcategory
+  .get(filterByCategory, getSubCategories) // Public: Retrieve all subcategories, filtered by category if applicable
   .post(
-    authMiddleware.protect,
-    authMiddleware.allowedTo("admin", "manager"),
-    setCategoryId,
-    createSubCategoryValidator,
-    createSubCategory
+    authMiddleware.protect, // Authenticate user
+    authMiddleware.allowedTo("admin", "manager"), // Restrict to 'admin' and 'manager' roles
+    setCategoryId, // Set the category ID in the request body if not already provided
+    createSubCategoryValidator, // Validate subcategory creation data
+    createSubCategory // Create a new subcategory
   );
 
-// Route to handle subcategory operations by ID
+/**
+ * Route: /api/v1/subcategories/:id
+ * - GET: Retrieve a specific subcategory by ID.
+ * - PUT: Update a subcategory by ID (requires authentication and admin/manager role).
+ * - DELETE: Delete a subcategory by ID (requires authentication and admin/manager role).
+ */
 router
   .route("/:id")
-  .get(getSubCategoryValidator, getSubCategory)
+  .get(
+    getSubCategoryValidator, // Validate subcategory ID
+    getSubCategory // Retrieve the subcategory
+  )
   .put(
-    authMiddleware.protect,
-    authMiddleware.allowedTo("admin", "manager"),
-    updateSubCategoryValidator,
-    updateSubCategory
+    authMiddleware.protect, // Authenticate user
+    authMiddleware.allowedTo("admin", "manager"), // Restrict to 'admin' and 'manager' roles
+    updateSubCategoryValidator, // Validate subcategory update data
+    updateSubCategory // Update the subcategory
   )
   .delete(
-    authMiddleware.protect,
-    authMiddleware.allowedTo("admin", "manager"),
-    deleteSubCategoryValidator,
-    deleteSubCategory
+    authMiddleware.protect, // Authenticate user
+    authMiddleware.allowedTo("admin", "manager"), // Restrict to 'admin' and 'manager' roles
+    deleteSubCategoryValidator, // Validate subcategory ID
+    deleteSubCategory // Delete the subcategory
   );
 
 export default router;

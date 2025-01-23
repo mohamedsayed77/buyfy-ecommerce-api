@@ -8,10 +8,23 @@ const { addProductToWishList, removeProductToWishList, getMyWishlist } =
 
 const router = express.Router();
 
+// Protect all wishlist routes and restrict access to "admin" and "user" roles
 router.use(authMiddleware.protect, authMiddleware.allowedTo("admin", "user"));
 
-router.route("/").get(getMyWishlist).post(addProductToWishList);
+/**
+ * Route: /api/v1/wishlist
+ * - GET: Retrieve the logged-in user's wishlist.
+ * - POST: Add a product to the logged-in user's wishlist.
+ */
+router
+  .route("/")
+  .get(getMyWishlist) // Retrieve the wishlist
+  .post(addProductToWishList); // Add a product to the wishlist
 
-router.route("/:productId").delete(removeProductToWishList);
+/**
+ * Route: /api/v1/wishlist/:productId
+ * - DELETE: Remove a product from the logged-in user's wishlist.
+ */
+router.route("/:productId").delete(removeProductToWishList); // Remove a product from the wishlist
 
 export default router;

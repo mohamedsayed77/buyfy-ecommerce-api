@@ -1,51 +1,55 @@
 import AsyncHandler from "express-async-handler";
-
 import userModel from "../models/userModel.js";
-// import ApiError from "../utils/ApiError.js";
-// import ApiFeatures from "../utils/apiFeatures.js";
 
-// @description    add product to wish list
-// @route          Post  /api/v1/wishlist
-//  @access        protect/user
+/**
+ * @description    Add a product to the user's wishlist
+ * @route          POST /api/v1/wishlist
+ * @access         Protected (User)
+ */
 const addProductToWishList = AsyncHandler(async (req, res) => {
   const user = await userModel.findByIdAndUpdate(
     req.user._id,
-    // add product to wish list if it already exists it wont add it
+    // Add product to wishlist. Prevent duplicates with `$addToSet`.
     { $addToSet: { wishlist: req.body.productId } },
     { new: true }
   );
+
   res.status(201).json({
     status: "success",
-    message: "product added successfully to your wish list.",
+    message: "Product added to your wishlist successfully.",
     data: user.wishlist,
   });
 });
 
-// @description    remove product to wish list
-// @route          delete  /api/v1/wishlist
-//  @access        protect/user
+/**
+ * @description    Remove a product from the user's wishlist
+ * @route          DELETE /api/v1/wishlist/:productId
+ * @access         Protected (User)
+ */
 const removeProductToWishList = AsyncHandler(async (req, res) => {
   const user = await userModel.findByIdAndUpdate(
     req.user._id,
-    // pull => remove prooduct from wish list
+    // Remove product from wishlist using `$pull`
     { $pull: { wishlist: req.params.productId } },
     { new: true }
   );
 
-  res.status(201).json({
+  res.status(200).json({
     status: "success",
-    message: "product removed successfully from your wish list.",
+    message: "Product removed from your wishlist successfully.",
     data: user.wishlist,
   });
 });
 
-// @description    remove product to wish list
-// @route          Post  /api/v1/wishlist
-//  @access        protect/user
+/**
+ * @description    Retrieve the user's wishlist
+ * @route          GET /api/v1/wishlist
+ * @access         Protected (User)
+ */
 const getMyWishlist = AsyncHandler(async (req, res) => {
   const user = await userModel.findById(req.user._id).populate("wishlist");
 
-  res.status(201).json({
+  res.status(200).json({
     status: "success",
     results: user.wishlist.length,
     data: user.wishlist,

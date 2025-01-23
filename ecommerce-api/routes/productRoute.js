@@ -7,6 +7,7 @@ import resizeImage from "../middleware/imageProcessingMiddleware.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import reviewRoute from "./reviewRoute.js";
 
+// Destructure necessary utilities and services
 const { uploadMixImages } = uploadMiddleware;
 const { resizeProductImages } = resizeImage;
 const { createProduct, getProducts, getProduct, updateProduct, deleteProduct } =
@@ -20,47 +21,59 @@ const {
 
 // Define middleware to upload and handle product images
 const uploadProductsImages = uploadMixImages([
-  { name: "imageCover", maxCount: 1 },
-  { name: "images", maxCount: 5 },
+  { name: "imageCover", maxCount: 1 }, // Cover image (1 max)
+  { name: "images", maxCount: 5 }, // Additional images (up to 5)
 ]);
 
 // Create a new router instance
 const router = express.Router();
 
+/**
+ * Nested Route: Reviews for a specific product
+ * Example: `/api/v1/products/:productId/reviews`
+ * - Delegates to `reviewRoute`.
+ */
 router.use("/:productId/reviews", reviewRoute);
 
-// Define routes for products
+/**
+ * Route: /api/v1/products
+ * - GET: Fetch a list of all products (public).
+ * - POST: Create a new product (restricted to Admin/Manager).
+ */
 router
   .route("/")
-  .get(getProducts)
-  // Upload images, resize them, validate request, and create a product
+  .get(getProducts) // Public: Retrieve all products with filters, pagination, and sorting
   .post(
     authMiddleware.protect,
     authMiddleware.allowedTo("admin", "manager"),
-    uploadProductsImages,
-    resizeProductImages,
-    createProductValidator,
-    createProduct
+    uploadProductsImages, // Handle image uploads for products
+    resizeProductImages, // Resize uploaded images
+    createProductValidator, // Validate request body
+    createProduct // Create a new product
   );
 
-// Define routes for a specific product by ID
+/**
+ * Route: /api/v1/products/:id
+ * - GET: Fetch a specific product by ID (public).
+ * - PUT: Update an existing product (restricted to Admin/Manager).
+ * - DELETE: Delete a product by ID (restricted to Admin/Manager).
+ */
 router
   .route("/:id")
-  .get(getProductValidator, getProduct)
-  // Upload images, resize them, validate request, and update a product by ID
+  .get(getProductValidator, getProduct) // Public: Fetch a single product by ID
   .put(
     authMiddleware.protect,
     authMiddleware.allowedTo("admin", "manager"),
-    uploadProductsImages,
-    resizeProductImages,
-    updateProductValidator,
-    updateProduct
+    uploadProductsImages, // Handle image uploads for product updates
+    resizeProductImages, // Resize uploaded images
+    updateProductValidator, // Validate request body
+    updateProduct // Update a product
   )
   .delete(
     authMiddleware.protect,
     authMiddleware.allowedTo("admin", "manager"),
-    deleteProductValidator,
-    deleteProduct
+    deleteProductValidator, // Validate the product ID
+    deleteProduct // Delete a product
   );
 
 export default router;

@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 
-// Define the category schema
+/**
+ * Category Schema Definition
+ * - Defines the structure and validation rules for the Category model.
+ */
 const categorySchema = new mongoose.Schema(
   {
     name: {
@@ -10,34 +13,40 @@ const categorySchema = new mongoose.Schema(
       minlength: [2, "Category name must be at least 2 characters long."],
       maxlength: [32, "Category name must be at most 32 characters long."],
     },
-    // A and B => shoping.com/a-and-b
     slug: {
       type: String,
-      lowercase: true,
+      lowercase: true, // Ensure the slug is stored in lowercase
       unique: true,
     },
-    image: String,
+    image: String, // Stores the filename of the category image
   },
-  { timestamps: true }
+  { timestamps: true } // Automatically adds `createdAt` and `updatedAt` fields
 );
 
-// Mongoose post hook that modifies the 'image' field after a document is initialized (retrieved from the database)
+/**
+ * Middleware: Post 'init' Hook
+ * - Modifies the `image` field to include the full URL after a document is retrieved from the database.
+ */
 categorySchema.post("init", (doc) => {
-  // Append the base URL and port to the image field, if it exists, to create a full URL
   if (doc.image) {
-    const url = `${process.env.BASE_URL}:${process.env.PORT}/categories/${doc.image}`;
-    doc.image = url;
-  }
-});
-// Mongoose post hook that modifies the 'image' field after a document is saved to the database
-categorySchema.post("save", (doc) => {
-  // Append the base URL and port to the image field, if it exists, to create a full URL
-  if (doc.image) {
-    const url = `${process.env.BASE_URL}:${process.env.PORT}/categories/${doc.image}`;
-    doc.image = url;
+    doc.image = `${process.env.BASE_URL}:${process.env.PORT}/categories/${doc.image}`;
   }
 });
 
-// Create the category model from the schema
+/**
+ * Middleware: Post 'save' Hook
+ * - Modifies the `image` field to include the full URL after a document is saved to the database.
+ */
+categorySchema.post("save", (doc) => {
+  if (doc.image) {
+    doc.image = `${process.env.BASE_URL}:${process.env.PORT}/categories/${doc.image}`;
+  }
+});
+
+/**
+ * Category Model
+ * - Represents the Category entity in the database.
+ */
 const categoryModel = mongoose.model("Category", categorySchema);
+
 export default categoryModel;

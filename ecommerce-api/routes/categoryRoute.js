@@ -7,6 +7,7 @@ import uploadMiddleware from "../middleware/uploadMiddleware.js";
 import resizeImage from "../middleware/imageProcessingMiddleware.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
+// Destructure necessary methods and middleware
 const { uploadSingleImage } = uploadMiddleware;
 const { resizeCategoryImage } = resizeImage;
 const {
@@ -26,42 +27,56 @@ const {
 // Create a new router instance
 const router = express.Router();
 
-// Use subcategory routes for specific category ID
+/**
+ * Nested Routes: Subcategories
+ * - Handles routes like `/api/v1/categories/:categoryId/subcategories`.
+ * - Delegates subcategory logic to `subCategoryRoute`.
+ */
 router.use("/:categoryId/subcategories", subCategoriesRoute);
 
-// Define routes for categories
+/**
+ * Route: /api/v1/categories/
+ * - GET: Retrieve all categories.
+ * - POST: Create a new category (Admin or Manager only).
+ *   - Requires image upload and resizing.
+ *   - Validates the request body.
+ */
 router
   .route("/")
-  .get(getCategories)
-  // Upload image, resize it, validate request, and create a category
+  .get(getCategories) // Public route to fetch all categories
   .post(
-    authMiddleware.protect,
-    authMiddleware.allowedTo("admin", "manger"),
-    uploadSingleImage("image"),
-    resizeCategoryImage(),
-    createCategoryValidator,
-    createCategory
+    authMiddleware.protect, // Ensure the user is authenticated
+    authMiddleware.allowedTo("admin", "manager"), // Restrict access to admin and manager roles
+    uploadSingleImage("image"), // Middleware to upload a single category image
+    resizeCategoryImage(), // Resize the uploaded category image
+    createCategoryValidator, // Validate the request body
+    createCategory // Handle category creation
   );
 
-// Define routes for a specific category by ID
+/**
+ * Route: /api/v1/categories/:id
+ * - GET: Retrieve a specific category by its ID.
+ * - PUT: Update a specific category by its ID (Admin or Manager only).
+ *   - Requires image upload and resizing.
+ *   - Validates the request body.
+ * - DELETE: Remove a specific category by its ID (Admin or Manager only).
+ */
 router
   .route("/:id")
-  .get(getCategoryValidator, getCategory)
-
-  // Upload image, resize it, validate request, and update a category by ID
+  .get(getCategoryValidator, getCategory) // Fetch a specific category by ID
   .put(
-    authMiddleware.protect,
-    authMiddleware.allowedTo("admin", "manger"),
-    uploadSingleImage("image"),
-    resizeCategoryImage(),
-    updateCategoryValidator,
-    updateCategory
+    authMiddleware.protect, // Ensure the user is authenticated
+    authMiddleware.allowedTo("admin", "manager"), // Restrict access to admin and manager roles
+    uploadSingleImage("image"), // Middleware to upload a single category image
+    resizeCategoryImage(), // Resize the uploaded category image
+    updateCategoryValidator, // Validate the request body
+    updateCategory // Handle category update
   )
   .delete(
-    authMiddleware.protect,
-    authMiddleware.allowedTo("admin", "manger"),
-    deleteCategoryValidator,
-    deleteCategory
+    authMiddleware.protect, // Ensure the user is authenticated
+    authMiddleware.allowedTo("admin", "manager"), // Restrict access to admin and manager roles
+    deleteCategoryValidator, // Validate the category ID
+    deleteCategory // Handle category deletion
   );
 
 export default router;

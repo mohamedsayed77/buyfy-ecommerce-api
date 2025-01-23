@@ -16,8 +16,9 @@ import authRoute from "./routes/authRoute.js";
 import meRoute from "./routes/meRoute.js";
 import reviewRoute from "./routes/reviewRoute.js";
 import wishListRoute from "./routes/wishlistRoute.js";
+import addressRoute from "./routes/addressRoute .js";
 
-// Load environment variables from the .env file
+// Load environment variables from .env file
 dotenv.config();
 
 // Connect to the database
@@ -26,18 +27,19 @@ connectDB();
 // Initialize express app
 const app = express();
 
-// Middleware to parse JSON
+// Middleware to parse incoming JSON payloads
 app.use(express.json());
 
 // Serve static files from the "uploads" directory
 app.use(express.static(path.join(process.cwd(), "uploads")));
 
-// Enable detailed request logging and output the current mode in development environment
+// Enable logging for requests in development mode
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
-  console.log(`mode: ${process.env.NODE_ENV}`);
+  console.log(`Application running in ${process.env.NODE_ENV} mode`);
 }
-// Route handlers for different endpoints
+
+// Mount route handlers
 app.use("/api/v1/categories", categoryRoute);
 app.use("/api/v1/subcategories", subCategoryRoute);
 app.use("/api/v1/brands", brandRoute);
@@ -47,28 +49,29 @@ app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/me", meRoute);
 app.use("/api/v1/reviews", reviewRoute);
 app.use("/api/v1/wishlist", wishListRoute);
+app.use("/api/v1/address", addressRoute);
 
-// Handle all undefined routes
+// Handle undefined routes
 app.all("*", (req, res, next) => {
-  next(new ApiError(`Cant't find this route: ${req.originalUrl}`, 400));
+  next(new ApiError(`Can't find this route: ${req.originalUrl}`, 400));
 });
 
 // Global error handling middleware
 app.use(globalError);
 
-// Start the server and listen on the specified port
+// Start the server
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-// Handle unhandled promise rejections
+// Gracefully handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
-  console.error(`unhandledRejection Errors: ${err.name} | ${err.message}`);
+  console.error(`Unhandled Rejection: ${err.name} | ${err.message}`);
 
   // Close the server and exit the process
   server.close(() => {
-    console.error("Server is shutting down");
+    console.error("Server shutting down due to unhandled rejection");
     process.exit(1);
   });
 });

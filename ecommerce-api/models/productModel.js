@@ -84,28 +84,31 @@ const productSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    //  to enable virtual population
+    // Enable virtual fields for JSON and object responses
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
 );
+
+// Virtual field to populate reviews associated with the product
 productSchema.virtual("reviews", {
   ref: "Review",
   localField: "_id",
   foreignField: "product",
 });
 
-// Mongoose middleware that populates the category field with its name
+// Pre-query middleware to populate the category field with its name
 productSchema.pre(/^find/, function (next) {
   this.populate({
     path: "category",
-    select: "name ",
+    select: "name",
   });
   next();
 });
 
 /**
- * Function to set the full URL for image fields in the document.
+ * Helper function to generate full URLs for image fields.
+ * Modifies the 'imageCover' and 'images' fields by appending the base URL.
  * @param {Object} doc - The document object.
  */
 const setImageUrl = (doc) => {
@@ -117,28 +120,22 @@ const setImageUrl = (doc) => {
     const imageList = [];
     doc.images.forEach((image) => {
       const imageUrl = `${process.env.BASE_URL}:${process.env.PORT}/products/${image}`;
-      imageList.push(imageUrl); // Add the full URL for each image to the list
+      imageList.push(imageUrl); // Add the full URL for each image
     });
-    doc.images = imageList; // Update the images field with the list of full URLs
+    doc.images = imageList; // Update the 'images' field with full URLs
   }
 };
 
-/**
- * Mongoose post hook that modifies the 'imageCover' and 'images' fields
- * after a document is initialized (retrieved from the database).
- */
+// Post-query middleware to modify 'imageCover' and 'images' after retrieval
 productSchema.post("init", (doc) => {
   setImageUrl(doc);
 });
 
-/**
- * Mongoose post hook that modifies the 'imageCover' and 'images' fields
- * after a document is saved to the database.
- */
+// Post-save middleware to modify 'imageCover' and 'images' after saving
 productSchema.post("save", (doc) => {
   setImageUrl(doc);
 });
 
-// Create the product model from the schema
+// Create and export the product model
 const ProductModel = mongoose.model("Product", productSchema);
 export default ProductModel;

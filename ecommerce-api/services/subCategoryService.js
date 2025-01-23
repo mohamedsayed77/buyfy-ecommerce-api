@@ -1,23 +1,33 @@
 import expressAsyncHandler from "express-async-handler";
-
 import SubCategoryModel from "../models/subCategoryModel.js";
 import ApiError from "../utils/ApiError.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 
-// @description    create a new subcategory
-// @route          Post  /api/v1/subcategories
-//  @access        Private
+/**
+ * @description    Create a new subcategory
+ * @route          POST /api/v1/subcategories
+ * @access         Private (Admin/Manager)
+ */
 const createSubCategory = expressAsyncHandler(async (req, res) => {
   const subCategory = await SubCategoryModel.create(req.body);
-  res.status(201).json({ data: subCategory });
+
+  res.status(201).json({
+    status: "success",
+    message: "Subcategory created successfully.",
+    data: subCategory,
+  });
 });
 
-// @discussion   Get list of subcategories
-// @route        Get /api/v1/subcategories
-// @access       public
+/**
+ * @description    Get a list of subcategories with filters, pagination, and sorting
+ * @route          GET /api/v1/subcategories
+ * @access         Public
+ */
 const getSubCategories = expressAsyncHandler(async (req, res) => {
-  // build the query
+  // Count total documents for pagination
   const documentsCount = await SubCategoryModel.countDocuments();
+
+  // Build query features
   const apiFeatures = new ApiFeatures(SubCategoryModel.find(), req.query)
     .paginate(documentsCount)
     .filter(req)
@@ -27,63 +37,80 @@ const getSubCategories = expressAsyncHandler(async (req, res) => {
 
   const { query, paginationResult } = apiFeatures;
 
-  // execute the query
+  // Execute the query
   const subCategories = await query;
 
-  // Send the response
   res.status(200).json({
+    status: "success",
     results: subCategories.length,
     paginationResult,
     data: subCategories,
   });
 });
 
-// @discussion   Get specific subcategory by id
-// @route        Get /api/v1/subcategories/:id
-// @access       public
+/**
+ * @description    Get a specific subcategory by ID
+ * @route          GET /api/v1/subcategories/:id
+ * @access         Public
+ */
 const getSubCategory = expressAsyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
   const subCategory = await SubCategoryModel.findById(id);
 
   if (!subCategory) {
-    return next(new ApiError(`No category for this id ${id}`, 404));
+    return next(new ApiError(`No subcategory found for ID: ${id}`, 404));
   }
 
-  res.status(200).json({ data: subCategory });
+  res.status(200).json({
+    status: "success",
+    data: subCategory,
+  });
 });
-// @description    update specific subcategory
-// @route          Post  /api/v1/subcategories/:id
-// @access        private
+
+/**
+ * @description    Update a specific subcategory by ID
+ * @route          PUT /api/v1/subcategories/:id
+ * @access         Private (Admin/Manager)
+ */
 const updateSubCategory = expressAsyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
-  const subcategory = await SubCategoryModel.findOneAndUpdate(
+  const subCategory = await SubCategoryModel.findOneAndUpdate(
     { _id: id },
     req.body,
     { new: true }
   );
 
-  if (!subcategory) {
-    return next(new ApiError(`No subCategory for this id ${id}`, 404));
+  if (!subCategory) {
+    return next(new ApiError(`No subcategory found for ID: ${id}`, 404));
   }
 
-  res.status(200).json({ data: subcategory });
+  res.status(200).json({
+    status: "success",
+    message: "Subcategory updated successfully.",
+    data: subCategory,
+  });
 });
 
-// @description    delete specific subcategory
-// @route          Delete  /api/v1/subcategories/:id
-// @access        private
+/**
+ * @description    Delete a specific subcategory by ID
+ * @route          DELETE /api/v1/subcategories/:id
+ * @access         Private (Admin/Manager)
+ */
 const deleteSubCategory = expressAsyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
   const subCategory = await SubCategoryModel.findByIdAndDelete(id);
 
   if (!subCategory) {
-    return next(new ApiError(`No subCategory for this id ${id}`, 404));
+    return next(new ApiError(`No subcategory found for ID: ${id}`, 404));
   }
 
-  res.status(204).send();
+  res.status(204).json({
+    status: "success",
+    message: "Subcategory deleted successfully.",
+  });
 });
 
 export default {

@@ -2,6 +2,9 @@ import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
 import AsyncHandler from "express-async-handler";
 
+/**
+ * Middleware to resize and process profile images
+ */
 const resizeProfileImage = () =>
   AsyncHandler(async (req, res, next) => {
     if (req.file) {
@@ -13,12 +16,15 @@ const resizeProfileImage = () =>
         .jpeg({ quality: 95 })
         .toFile(`uploads/profiles/${filename}`);
 
-      // save the image to the database
+      // Attach the processed file to the request body
       req.body.profileImg = filename;
     }
     next();
   });
-// Function to resize category images
+
+/**
+ * Middleware to resize and process category images
+ */
 const resizeCategoryImage = () =>
   AsyncHandler(async (req, res, next) => {
     if (req.file) {
@@ -30,14 +36,15 @@ const resizeCategoryImage = () =>
         .jpeg({ quality: 95 })
         .toFile(`uploads/categories/${filename}`);
 
-      // save the image to the database
+      // Attach the processed file to the request body
       req.body.image = filename;
     }
-
     next();
   });
 
-// Function to resize brand images
+/**
+ * Middleware to resize and process brand images
+ */
 const resizeBrandImage = () =>
   AsyncHandler(async (req, res, next) => {
     if (req.file) {
@@ -49,46 +56,51 @@ const resizeBrandImage = () =>
         .jpeg({ quality: 95 })
         .toFile(`uploads/brands/${filename}`);
 
-      // save the image to the database
+      // Attach the processed file to the request body
       req.body.image = filename;
     }
     next();
   });
 
-// Middleware to resize product images
+/**
+ * Middleware to optionally resize and process product images
+ */
 const resizeProductImages = AsyncHandler(async (req, res, next) => {
-  // image processing for imageCover
-  if (req.files.imageCover) {
-    const imageCoverFileName = `product-${uuidv4()}-${Date.now()}-cover.jpeg`;
+  if (req.files) {
+    // Process the main product image (imageCover)
+    if (req.files.imageCover && req.files.imageCover[0]) {
+      const imageCoverFileName = `product-${uuidv4()}-${Date.now()}-cover.jpeg`;
 
-    await sharp(req.files.imageCover[0].buffer)
-      .resize(2000, 1333)
-      .toFormat("jpeg")
-      .jpeg({ quality: 95 })
-      .toFile(`uploads/products/${imageCoverFileName}`);
+      await sharp(req.files.imageCover[0].buffer)
+        .resize(2000, 1333)
+        .toFormat("jpeg")
+        .jpeg({ quality: 95 })
+        .toFile(`uploads/products/${imageCoverFileName}`);
 
-    // save the imageCover to the database
-    req.body.imageCover = imageCoverFileName;
+      // Attach the processed file to the request body
+      req.body.imageCover = imageCoverFileName;
+    }
+
+    // Process additional product images (images)
+    if (req.files.images && req.files.images.length > 0) {
+      req.body.images = [];
+      await Promise.all(
+        req.files.images.map(async (image, index) => {
+          const imageFileName = `product-${uuidv4()}-${Date.now()}-${index + 1}.jpeg`;
+
+          await sharp(image.buffer)
+            .resize(2000, 1333)
+            .toFormat("jpeg")
+            .jpeg({ quality: 95 })
+            .toFile(`uploads/products/${imageFileName}`);
+
+          // Attach the processed image to the request body
+          req.body.images.push(imageFileName);
+        })
+      );
+    }
   }
 
-  // image processing for images
-  if (req.files.images) {
-    req.body.images = [];
-    await Promise.all(
-      req.files.images.map(async (image, index) => {
-        const imageFileName = `product-${uuidv4()}-${Date.now()}-${index + 1}.jpeg`;
-
-        await sharp(image.buffer)
-          .resize(2000, 1333)
-          .toFormat("jpeg")
-          .jpeg({ quality: 95 })
-          .toFile(`uploads/products/${imageFileName}`);
-
-        // save the image to the database
-        req.body.images.push(imageFileName);
-      })
-    );
-  }
   next();
 });
 

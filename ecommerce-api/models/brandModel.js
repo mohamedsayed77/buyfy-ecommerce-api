@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 
-// Define the brand schema
+/**
+ * Brand Schema Definition
+ * - Defines the structure and validation rules for the Brand model.
+ */
 const brandSchema = new mongoose.Schema(
   {
     name: {
@@ -12,31 +15,38 @@ const brandSchema = new mongoose.Schema(
     },
     slug: {
       type: String,
-      lowercase: true,
+      lowercase: true, // Ensure the slug is stored in lowercase
       unique: true,
     },
-    image: String,
+    image: String, // Path to the brand image
   },
-  { timestamps: true }
+  { timestamps: true } // Automatically add `createdAt` and `updatedAt` timestamps
 );
 
-// Mongoose post hook that modifies the 'image' field after a document is initialized (retrieved from the database)
+/**
+ * Middleware: Post 'init' Hook
+ * - Modifies the `image` field to include the full URL after a document is retrieved from the database.
+ */
 brandSchema.post("init", (doc) => {
-  // Append the base URL and port to the image field, if it exists, to create a full URL
   if (doc.image) {
-    const url = `${process.env.BASE_URL}:${process.env.PORT}/brands/${doc.image}`;
-    doc.image = url;
-  }
-});
-// Mongoose post hook that modifies the 'image' field after a document is saved to the database
-brandSchema.post("save", (doc) => {
-  // Append the base URL and port to the image field, if it exists, to create a full URL
-  if (doc.image) {
-    const url = `${process.env.BASE_URL}:${process.env.PORT}/brands/${doc.image}`;
-    doc.image = url;
+    doc.image = `${process.env.BASE_URL}:${process.env.PORT}/brands/${doc.image}`;
   }
 });
 
-// Create the brand model from the schema
+/**
+ * Middleware: Post 'save' Hook
+ * - Modifies the `image` field to include the full URL after a document is saved to the database.
+ */
+brandSchema.post("save", (doc) => {
+  if (doc.image) {
+    doc.image = `${process.env.BASE_URL}:${process.env.PORT}/brands/${doc.image}`;
+  }
+});
+
+/**
+ * Brand Model
+ * - Represents the Brand entity in the database.
+ */
 const brandModel = mongoose.model("Brand", brandSchema);
+
 export default brandModel;
